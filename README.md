@@ -16,7 +16,6 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
 * [Official USB-C Power Supply](https://www.raspberrypi.org/products/type-c-power-supply/) (DC 5.1 3A output)
 
 
-
 # Part A. Pi Setup  
 
 [comment]: # 4. Update your Windows 10, if needed. 
@@ -36,7 +35,7 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
    Reply from fe80::48fd:294e:4b75:31a7%11: time=1ms
    Reply from fe80::48fd:294e:4b75:31a7%11: time<1ms
    ```
-1. SSH into the Pi
+1. SSH into the Pi. The default password is most likely *raspberry*
    ```
    C:\Users\letss>ssh pi@fe80::48fd:294e:4b75:31a7%11
    The authenticity of host 'fe80::48fd:294e:4b75:31a7%11 (fe80::48fd:294e:4b75:31a7%11)' can't be established.
@@ -60,7 +59,9 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
    Wi-Fi is currently blocked by rfkill.
    Use raspi-config to set the country before use.
    ```
-
+1. Change ssh password 
+1. pi@raspberrypi:~ $ sudo raspi-config
+    
 1. Setup WiFi
   1. pi@raspberrypi:~ $ sudo raspi-config
      ![Wifi Setup 1](/help/images/Config-wifi-1.png "Wifi setup - step 1")
@@ -102,28 +103,42 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
 1. Get VS Code IoT Edge extension
 1. From the left bar select the Azure extension and see if your Azure subscription is selected.
    Please note that it took > 5 minutes and/or VS Code rester for the freshly created subscription to appear. 
+1. Azure CLI
+1. Oher normal dev software:
+   1. git
+   1. git config --global credential.helper wincred
+   
 
 # Part C. Cloud setup 
 
+Some steps from [Quickstart: Deploy your first IoT Edge module to a virtual Linux device](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux?view=iotedge-2018-06)
 
-5. Create an IoT Hub
-https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux?view=iotedge-2018-06
+1. Sing up for an Azure subscription. I'm using Pay-As-You-Go Azure subscription, I used up  12 months.
+1. Open PowerShell 
+1. Remove legacy iot extension versions and install the latest and greatest version:  
+   ```
+   az extension remove --name azure-cli-iot-ext
+   az extension add --name azure-iot
+   ```
+1. Create a resource group. 
+   ```
+   az group create --name group1 --location australiaeast
+   ```
 
-az group create --name group1 --location australiaeast
-az iot hub create --name myhub1 --resource-group group1 --sku F1 --partition-count 2
-The '2' is needed because the default is 4 and is rejected for the F1 tier
-
-Remove legacy any legacy versions: 
-az extension remove --name azure-cli-iot-ext
-az extension add --name azure-iot
-
-az iot hub device-identity create --device-id d1 --edge-enabled --hub-name myhub1
-
--- We don't need it yet
---az iot hub device-identity connection-string show --device-id d1 --hub-name myhub1
-
-
-
+1. Create an IoT Hub at the free tier. 
+   *Hub name must be globally unique so myhub1 won't work.*
+   az iot hub create --name myhub1 --resource-group group1 --sku F1 --partition-count 2
+   ```
+   *--partition-count 2* is needed because the default is 4 and is rejected for the F1 tier
+1. Create a device registry record
+   ```
+   az iot hub device-identity create --device-id d1 --edge-enabled --hub-name myhub1
+   ```
+1. You can peek at the connection string (which will be stored on the device so that it can connect to IoT Hub).
+   We'll need it later.
+   ```
+   az iot hub device-identity connection-string show --device-id d1 --hub-name myhub1
+   ```
 
 Now we're following https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux
 
