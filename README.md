@@ -35,7 +35,7 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
    Reply from fe80::48fd:294e:4b75:31a7%11: time=1ms
    Reply from fe80::48fd:294e:4b75:31a7%11: time<1ms
    ```
-1. SSH into the Pi. The default password is most likely *raspberry*
+1. SSH into the Pi. The default password is most likely '*raspberry*'.
    ```
    C:\Users\letss>ssh pi@fe80::48fd:294e:4b75:31a7%11
    The authenticity of host 'fe80::48fd:294e:4b75:31a7%11 (fe80::48fd:294e:4b75:31a7%11)' can't be established.
@@ -115,6 +115,11 @@ Some steps from [Quickstart: Deploy your first IoT Edge module to a virtual Linu
 
 1. Sing up for an Azure subscription. I'm using Pay-As-You-Go Azure subscription, I used up  12 months.
 1. Open PowerShell 
+1. Login to Azure
+   ```
+   az login
+   ```
+   ![Azure CLI login](/help/images/PowerShell1.png "Azure CLI login")
 1. Remove legacy iot extension versions and install the latest and greatest version:  
    ```
    az extension remove --name azure-cli-iot-ext
@@ -124,9 +129,9 @@ Some steps from [Quickstart: Deploy your first IoT Edge module to a virtual Linu
    ```
    az group create --name group1 --location australiaeast
    ```
-
 1. Create an IoT Hub at the free tier. 
    *Hub name must be globally unique so myhub1 won't work.*
+   ```
    az iot hub create --name myhub1 --resource-group group1 --sku F1 --partition-count 2
    ```
    *--partition-count 2* is needed because the default is 4 and is rejected for the F1 tier
