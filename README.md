@@ -145,10 +145,7 @@ Some steps from [Quickstart: Deploy your first IoT Edge module to a virtual Linu
    az iot hub device-identity connection-string show --device-id d1 --hub-name myhub1
    ```
 
-
-
-
-Part D. Install IoT Edge on Pi
+# Part D. Install IoT Edge on Pi
 
 Following [Install or uninstall the Azure IoT Edge runtime](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux)
 
@@ -176,7 +173,7 @@ It's best tot follow the referenced article rather than the steps below because 
 1. [Install the IoT Edge security daemon](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux#install-the-iot-edge-security-daemon)
 1. `sudo apt-get install iotedge`
 
-Part E. Connect to IoT Hub
+# Part E. Connect to IoT Hub
 
 Getting inspiration from [Set up an Azure IoT Edge device with symmetric key authentication](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=azure-portal%2Clinux)
 
@@ -285,3 +282,9 @@ We've created a device using Azure CLI earlier so we don't need to create it.
    1. Make a (mental) note that we need to address:
       * not rotating logs (this may cause a propblem even a home project)
       * `No such object: edgeHub`
+
+# (Optional) Part F. Deploy a simulated temperature module 
+
+Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux?view=iotedge-2018-06#deploy-a-module) from *Quickstart: Deploy your first IoT Edge module to a virtual Linux device*.
+
+1.
