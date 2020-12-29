@@ -73,17 +73,17 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
      Sat 26 Dec 22:21:27 GMT 2020
      ```
    1. Setup timezone:
-      ```
-      pi@raspberrypi:~ $ sudo raspi-config
+    ```
+    pi@raspberrypi:~ $ sudo raspi-config
   
 
-      Current default time zone: 'Australia/Brisbane'
-      Local time is now:      Sun Dec 27 08:22:07 AEST 2020.
-      Universal Time is now:  Sat Dec 26 22:22:07 UTC 2020.
+    Current default time zone: 'Australia/Brisbane'
+    Local time is now:    Sun Dec 27 08:22:07 AEST 2020.
+    Universal Time is now:  Sat Dec 26 22:22:07 UTC 2020.
 
-      pi@raspberrypi:~ $ pi@raspberrypi:~ $ date
-      Sun 27 Dec 08:22:16 AEST 2020
-      ```
+    pi@raspberrypi:~ $ pi@raspberrypi:~ $ date
+    Sun 27 Dec 08:22:16 AEST 2020
+    ```
 
 1. *BTW. After the Pi connects to WiFi raspberrypi.local will become IPv4 address:*
    ```
@@ -145,7 +145,143 @@ Some steps from [Quickstart: Deploy your first IoT Edge module to a virtual Linu
    az iot hub device-identity connection-string show --device-id d1 --hub-name myhub1
    ```
 
-Now we're following https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux
 
 
 
+Part D. Install IoT Edge on Pi
+
+Following [Install or uninstall the Azure IoT Edge runtime](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux)
+
+It's best tot follow the referenced article rather than the steps below because if has explainations and troubleshooting tips.
+
+1. ssh pi@a.b.c.d
+1. > Prepare your device to access the Microsoft installation packages.
+   > 1.  Install the repository configuration that matches your device operating system.
+   >*  Raspberry Pi OS Stretch:
+   >```
+   >curl https://packages.microsoft.com/config/debian/stretch/multiarch/prod.list > ./microsoft-prod.list
+   >```
+   >1. Copy the generated list to the sources.list.d directory.
+   >```
+   >sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/
+   >```
+   > 1. Install the Microsoft GPG public key.
+   >```
+   >curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+   >sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/
+   >```
+1. [Install a container engine](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux#install-a-container-engine)
+   1. `sudo apt-get update`
+   1. `sudo apt-get install moby-engine`
+1. [Install the IoT Edge security daemon](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux#install-the-iot-edge-security-daemon)
+1. `sudo apt-get install iotedge`
+
+Part E. Connect to IoT Hub
+
+Getting inspiration from [Set up an Azure IoT Edge device with symmetric key authentication](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=azure-portal%2Clinux)
+
+For a more secure - and the recommended way for production scenarios - you can follow [Set up an Azure IoT Edge device with X.509 certificate authentication](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-x509?view=iotedge-2018-06).
+
+We've created a device using Azure CLI earlier so we don't need to create it. 
+
+1. We need the devices's connection string. This can be done via Azure CLI or in VS Code:
+   1. ```
+      PS C:\Users\letss> az iot hub device-identity connection-string show --device-id d1 --hub-name myhub1
+      {
+         "connectionString": "HostName=myhub1.azure-devices.net;DeviceId=d1;SharedAccessKey=t5f/1...MKI="
+      }
+      ``` 
+      or
+   1. In VS Code:
+      1. Bottom left corner - select IoT Hub 
+      1. Select the device 
+      1. Rigth click - *Copy Device Connection String*
+         ![VS Code - Copy Device Connection String](/help/images/VS_Code_connection_string.png "VS Code - Copy Device Connection String")
+1. Back on the device, [Provision an IoT Edge device](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=visual-studio-code%2Clinux#provision-an-iot-edge-device)
+  1.  `sudo nano /etc/iotedge/config.yaml`
+  1. Change the connection string. [Provision an IoT Edge device](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=visual-studio-code%2Clinux#provision-an-iot-edge-device) has help how to paste and save in `nano` the text editor that is used here.
+  1. `sudo systemctl restart iotedge`
+1. [Verify successful setup](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=visual-studio-code%2Clinux#verify-successful-setup)  
+  1. Check the status of the IoT Edge service. It should be listed as running: `systemctl status iotedge`
+      ```
+      pi@raspberrypi:~ $ systemctl status iotedge
+      ● iotedge.service - Azure IoT Edge daemon
+         Loaded: loaded (/lib/systemd/system/iotedge.service; enabled; vendor preset: enabled)
+         Active: active (running) since Tue 2020-12-29 11:55:45 AEST; 1min 16s ago
+         Docs: man:iotedged(8)
+      Main PID: 2753 (iotedged)
+         Tasks: 14 (limit: 3861)
+         CGroup: /system.slice/iotedge.service
+               └─2753 /usr/bin/iotedged -c /etc/iotedge/config.yaml
+
+      Dec 29 11:55:45 raspberrypi iotedged[2753]: 2020-12-29T01:55:45Z [INFO] - Edge issuer CA expiration date: 2021-03-29T01:37:57Z
+      Dec 29 11:56:18 raspberrypi iotedged[2753]: 2020-12-29T01:56:18Z [INFO] - Starting management API...
+      Dec 29 11:56:18 raspberrypi iotedged[2753]: 2020-12-29T01:56:18Z [INFO] - Starting workload API...
+      Dec 29 11:56:18 raspberrypi iotedged[2753]: 2020-12-29T01:56:18Z [INFO] - Starting watchdog with 60 second frequency...
+      Dec 29 11:56:18 raspberrypi iotedged[2753]: 2020-12-29T01:56:18Z [INFO] - Listening on fd://iotedge.mgmt.socket/ with 1 thread for management API.
+      Dec 29 11:56:18 raspberrypi iotedged[2753]: 2020-12-29T01:56:18Z [INFO] - Listening on fd://iotedge.socket/ with 1 thread for workload API.
+      Dec 29 11:56:18 raspberrypi iotedged[2753]: 2020-12-29T01:56:18Z [INFO] - Checking edge runtime status
+      Dec 29 11:56:18 raspberrypi iotedged[2753]: 2020-12-29T01:56:18Z [INFO] - Creating and starting edge runtime module edgeAgent
+      Dec 29 11:56:19 raspberrypi iotedged[2753]: 2020-12-29T01:56:19Z [INFO] - Updating identity for module $edgeAgent
+      Dec 29 11:56:19 raspberrypi iotedged[2753]: 2020-12-29T01:56:19Z [INFO] - Pulling image mcr.microsoft.com/azureiotedge-agent:1.0...
+      ```
+   1. Examine service logs: `journalctl -u iotedge --no-pager --no-full`
+   1. Run the checks:
+      ```
+      pi@raspberrypi:~ $ sudo iotedge check --verbose
+      Configuration checks
+      --------------------
+      √ config.yaml is well-formed - OK
+      √ config.yaml has well-formed connection string - OK
+      √ container engine is installed and functional - OK
+      √ config.yaml has correct hostname - OK
+      √ config.yaml has correct URIs for daemon mgmt endpoint - OK
+      √ latest security daemon - OK
+      √ host time is close to real time - OK
+      √ container time is close to host time - OK
+      ‼ DNS server - Warning
+         Container engine is not configured with DNS server setting, which may impact connectivity to IoT Hub.
+         Please see https://aka.ms/iotedge-prod-checklist-dns for best practices.
+         You can ignore this warning if you are setting DNS server per module in the Edge deployment.
+            caused by: Could not open container engine config file /etc/docker/daemon.json
+            caused by: No such file or directory (os error 2)
+      ‼ production readiness: certificates - Warning
+         The Edge device is using self-signed automatically-generated development certificates.
+         They will expire in 89 days (at 2021-03-29 01:37:57 UTC) causing module-to-module and downstream device communication to fail on an active deployment.
+         After the certs have expired, restarting the IoT Edge daemon will trigger it to generate new development certs.
+         Please consider using production certificates instead. See https://aka.ms/iotedge-prod-checklist-certs for best practices.
+      √ production readiness: container engine - OK
+      ‼ production readiness: logs policy - Warning
+         Container engine is not configured to rotate module logs which may cause it run out of disk space.
+         Please see https://aka.ms/iotedge-prod-checklist-logs for best practices.
+         You can ignore this warning if you are setting log policy per module in the Edge deployment.
+            caused by: Could not open container engine config file /etc/docker/daemon.json
+            caused by: No such file or directory (os error 2)
+      ‼ production readiness: Edge Agent's storage directory is persisted on the host filesystem - Warning
+         The edgeAgent module is not configured to persist its /tmp/edgeAgent directory on the host filesystem.
+         Data might be lost if the module is deleted or updated.
+         Please see https://aka.ms/iotedge-storage-host for best practices.
+      × production readiness: Edge Hub's storage directory is persisted on the host filesystem - Error
+         Could not check current state of edgeHub container
+            caused by: docker returned exit code: 1, stderr = Error: No such object: edgeHub
+
+      Connectivity checks
+      -------------------
+      √ host can connect to and perform TLS handshake with IoT Hub AMQP port - OK
+      √ host can connect to and perform TLS handshake with IoT Hub HTTPS / WebSockets port - OK
+      √ host can connect to and perform TLS handshake with IoT Hub MQTT port - OK
+      √ container on the default network can connect to IoT Hub AMQP port - OK
+      √ container on the default network can connect to IoT Hub HTTPS / WebSockets port - OK
+      √ container on the default network can connect to IoT Hub MQTT port - OK
+      √ container on the IoT Edge module network can connect to IoT Hub AMQP port - OK
+      √ container on the IoT Edge module network can connect to IoT Hub HTTPS / WebSockets port - OK
+      √ container on the IoT Edge module network can connect to IoT Hub MQTT port - OK
+
+      18 check(s) succeeded.
+      4 check(s) raised warnings.
+      1 check(s) raised errors.
+      ```
+       ![iotedge check - Output](/help/images/iotedge-check-with-errors.png "iotedge check - Output")
+   1. Make a (mental) note that we need to address:
+      * not rotating logs (this may cause a propblem even a home project)
+      * `No such object: edgeHub`
