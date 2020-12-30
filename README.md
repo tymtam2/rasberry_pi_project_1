@@ -289,13 +289,14 @@ Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quic
 
 **It's best to follow the original article as it has screenshots and explanations!**
 
-> 1. Sign in to the Azure portal and navigate to your IoT hub.
-> 1. From the menu on the left pane, under Automatic Device Management, select IoT Edge.
-> 1. Click on the device ID of the target device from the list of devices.
-> 1. On the upper bar, select Set Modules.
-> 1. In the IoT Edge Modules section of the page, click Add and select Marketplace Module from the drop-down menu.
-> 1. Notice that the SimulatedTemperatureSensor module is added to the IoT Edge Modules section, with the desired status running.
->    Select Next: Routes to continue to the next step of the wizard.
+1. Install the module
+   > 1. Sign in to the Azure portal and navigate to your IoT hub.
+   > 1. From the menu on the left pane, under Automatic Device Management, select IoT Edge.
+   > 1. Click on the device ID of the target device from the list of devices.
+   > 1. On the upper bar, select Set Modules.
+   > 1. In the IoT Edge Modules section of the page, click Add and select Marketplace Module from the drop-down menu.
+   > 1. Notice that the SimulatedTemperatureSensor module is added to the IoT Edge Modules section, with the desired status running.
+   >    Select Next: Routes to continue to the next step of the wizard.
 1. Glance at the default routes, and proceed to *Next: Review + create >*
 1. Create the manifest
 1. Back on the device check if the device obtained the new device and runs the new module. 
@@ -338,6 +339,5 @@ Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quic
          12/30/2020 23:18:46> Sending message: 3, Body: [{"machine":{"temperature":22.608422316544885,"pressure":1.1832379854291641},"ambient":{"temperature":20.83138321588346,"humidity":24},"timeCreated":"2020-12-30T23:18:46.4302656Z"}]
    ```
 1. Back on the dev machine (not edge device), observe the events in VS Code:
-    
-       ![Watching events in VS Code 1](/help/images/VS_Code_monitoring_events_1.png "Watching events in VS Code 1")
-     ![Watching events in VS Code 2](/help/images/VS_Code_monitoring_events_2.png "Watching events in VS Code 2") 
+   ![Watching events in VS Code 1](/help/images/VS_Code_monitoring_events_1.png "Watching events in VS Code 1")
+   ![Watching events in VS Code 2](/help/images/VS_Code_monitoring_events_2.png "Watching events in VS Code 2") 
