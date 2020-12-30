@@ -287,4 +287,57 @@ We've created a device using Azure CLI earlier so we don't need to create it.
 
 Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux?view=iotedge-2018-06#deploy-a-module) from *Quickstart: Deploy your first IoT Edge module to a virtual Linux device*.
 
-1.
+**It's best to follow the original article as it has screenshots and explanations!**
+
+> 1. Sign in to the Azure portal and navigate to your IoT hub.
+> 1. From the menu on the left pane, under Automatic Device Management, select IoT Edge.
+> 1. Click on the device ID of the target device from the list of devices.
+> 1. On the upper bar, select Set Modules.
+> 1. In the IoT Edge Modules section of the page, click Add and select Marketplace Module from the drop-down menu.
+> 1. Notice that the SimulatedTemperatureSensor module is added to the IoT Edge Modules section, with the desired status running.
+>    Select Next: Routes to continue to the next step of the wizard.
+1. Glance at the default routes, and proceed to *Next: Review + create >*
+1. Create the manifest
+1. Back on the device check if the device obtained the new device and runs the new module. 
+   edgeAgent's module logs will confirm that the new configuration is obtained
+   ```
+   pi@raspberrypi:~ $ sudo iotedge logs edgeAgent -f
+   <6> 2020-12-30 23:17:40.335 +00:00 [INF] - Edge agent attempting to connect to IoT Hub via Amqp_Tcp_Only...
+   <6> 2020-12-30 23:17:40.812 +00:00 [INF] - Edge agent connected to IoT Hub via Amqp_Tcp_Only.
+   <6> 2020-12-30 23:17:41.117 +00:00 [INF] - Initialized new module client with subscriptions enabled
+   <6> 2020-12-30 23:17:41.412 +00:00 [INF] - Obtained Edge agent twin from IoTHub with desired properties version 2 and reported properties version 2.
+   <6> 2020-12-30 23:17:44.422 +00:00 [INF] - Plan execution started for deployment 2
+   <6> 2020-12-30 23:17:44.475 +00:00 [INF] - Executing command: "Command Group: (\n  [Create module SimulatedTemperatureSensor]\n  [Start module SimulatedTemperatureSensor]\n)"
+   <6> 2020-12-30 23:17:44.487 +00:00 [INF] - Executing command: "Create module SimulatedTemperatureSensor"
+   <6> 2020-12-30 23:17:54.377 +00:00 [INF] - Executing command: "Start module SimulatedTemperatureSensor"
+   <6> 2020-12-30 23:17:55.359 +00:00 [INF] - Executing command: "Command Group: (\n  [Create module edgeHub]\n  [Start module edgeHub]\n)"
+   <6> 2020-12-30 23:17:55.359 +00:00 [INF] - Executing command: "Create module edgeHub"
+   <6> 2020-12-30 23:18:17.990 +00:00 [INF] - Executing command: "Start module edgeHub"
+   <6> 2020-12-30 23:18:19.178 +00:00 [INF] - Plan execution ended for deployment 2
+   <6> 2020-12-30 23:18:19.577 +00:00 [INF] - Updated reported properties
+   <6> 2020-12-30 23:18:24.884 +00:00 [INF] - Updated reported properties
+   ^C
+   pi@raspberrypi:~ $ sudo iotedge list
+   NAME                        STATUS           DESCRIPTION      CONFIG
+   SimulatedTemperatureSensor  running          Up a minute      mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0
+   edgeAgent                   running          Up 2 days        mcr.microsoft.com/azureiotedge-agent:1.0
+   edgeHub                     running          Up a minute      mcr.microsoft.com/azureiotedge-hub:1.0
+   pi@raspberrypi:~ $
+   ```
+1. Observe the new module's logs
+   ```
+   pi@raspberrypi:~ $ sudo iotedge logs SimulatedTemperatureSensor --follow
+   [2020-12-30 23:17:55 +00:00]: Starting Module
+   SimulatedTemperatureSensor Main() started.
+   Initializing simulated temperature sensor to send 500 messages, at an interval of 5 seconds.
+   To change this, set the environment variable MessageCount to the number of messages that should be sent (set it to -1 to send unlimited messages).
+   [Information]: Trying to initialize module client using transport type [Amqp_Tcp_Only].
+   [Information]: Successfully initialized module client of transport type [Amqp_Tcp_Only].
+         12/30/2020 23:18:36> Sending message: 1, Body: [{"machine":{"temperature":21.361978102294717,"pressure":1.0412380116538285},"ambient":{"temperature":20.75437125761731,"humidity":24},"timeCreated":"2020-12-30T23:18:35.9559149Z"}]
+         12/30/2020 23:18:41> Sending message: 2, Body: [{"machine":{"temperature":22.599724394781386,"pressure":1.1822470829497782},"ambient":{"temperature":20.812547497131185,"humidity":24},"timeCreated":"2020-12-30T23:18:41.3406046Z"}]
+         12/30/2020 23:18:46> Sending message: 3, Body: [{"machine":{"temperature":22.608422316544885,"pressure":1.1832379854291641},"ambient":{"temperature":20.83138321588346,"humidity":24},"timeCreated":"2020-12-30T23:18:46.4302656Z"}]
+   ```
+1. Back on the dev machine (not edge device), observe the events in VS Code:
+    
+       ![Watching events in VS Code 1](/help/images/VS_Code_monitoring_events_1.png "Watching events in VS Code 1")
+     ![Watching events in VS Code 2](/help/images/VS_Code_monitoring_events_2.png "Watching events in VS Code 2") 
