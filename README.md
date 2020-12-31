@@ -6,20 +6,17 @@ This repo documents the steps I took to setup a Rasberry Pi 4 2GB to run Microso
 
 The project was inspired by [Lobe.ai](https://lobe.ai/). Initially I planned to make a simple UWP app on Windows IoT Core. 
 
-Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=windows)
+Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=windows).
 
 
 # Hardware 
 
 * Raspberry Pi 4 B 2GB 
-* Multicomp seethrough case
+* Transparent case by Multicomp
 * [Official USB-C Power Supply](https://www.raspberrypi.org/products/type-c-power-supply/) (DC 5.1 3A output)
 
 
 # Part A. Pi Setup  
-
-[comment]: # 4. Update your Windows 10, if needed. 
-[comment]: # 5. Dead end - newest windows is rejected by the "Check" script.
 
 1. Download the Raspberry Pi OS imager, e.g. from https://www.raspberrypi.org/software/   
 1. Install and run the imager
@@ -60,31 +57,29 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
    Use raspi-config to set the country before use.
    ```
 1. Change ssh password 
-1. pi@raspberrypi:~ $ sudo raspi-config
-    
+1. pi@raspberrypi:~ $ sudo raspi-config   
 1. Setup WiFi
-  1. pi@raspberrypi:~ $ sudo raspi-config
+   1. pi@raspberrypi:~ $ sudo raspi-config
      ![Wifi Setup 1](/help/images/Config-wifi-1.png "Wifi setup - step 1")
      ![Wifi Setup 2](/help/images/Config-wifi-2.png "Wifi setup - step 2")
      ![Wifi Setup 2](/help/images/Config-wifi-3.png "Wifi setup - step 3")
-  1. Wait a bit and confirm that the date and time have been synced
+   1. Wait a bit and confirm that the date and time have been synced
      ```
      pi@raspberrypi:~ $ date
      Sat 26 Dec 22:21:27 GMT 2020
      ```
-   1. Setup timezone:
-    ```
-    pi@raspberrypi:~ $ sudo raspi-config
+1. Setup timezone:
+   ```
+   pi@raspberrypi:~ $ sudo raspi-config
   
 
-    Current default time zone: 'Australia/Brisbane'
-    Local time is now:    Sun Dec 27 08:22:07 AEST 2020.
-    Universal Time is now:  Sat Dec 26 22:22:07 UTC 2020.
+   Current default time zone: 'Australia/Brisbane'
+   Local time is now:    Sun Dec 27 08:22:07 AEST 2020.
+   Universal Time is now:  Sat Dec 26 22:22:07 UTC 2020.
 
-    pi@raspberrypi:~ $ pi@raspberrypi:~ $ date
-    Sun 27 Dec 08:22:16 AEST 2020
-    ```
-
+   pi@raspberrypi:~ $ pi@raspberrypi:~ $ date
+   Sun 27 Dec 08:22:16 AEST 2020
+   ```
 1. *BTW. After the Pi connects to WiFi raspberrypi.local will become IPv4 address:*
    ```
    pi@raspberrypi:~ $ exit
@@ -341,3 +336,8 @@ Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quic
 1. Back on the dev machine (not edge device), observe the events in VS Code:
    ![Watching events in VS Code 1](/help/images/VS_Code_monitoring_events_1.png "Watching events in VS Code 1")
    ![Watching events in VS Code 2](/help/images/VS_Code_monitoring_events_2.png "Watching events in VS Code 2") 
+
+
+# (Optional) Part G. Build a custom module
+
+
