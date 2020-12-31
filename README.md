@@ -1,22 +1,32 @@
 # Introduction
 
-This repo documents the steps I took to setup a Rasberry Pi 4 2GB to run Microsoft's IoT Edge.
+This repo documents steps for building and deploying
+ * an app written in C# on a Windows laptop
+ * with a machine learning image classifier build using Lobe 
+ * that detects if a door is left open  
+ * running on a Raspberry Pi running Raspberry Pi OS (linux)
+ * using Microsoft's Azure IoT Edge. 
+
+ The number of steps required suprprised me, but the steps are simple (i.e. not complex).
 
 # Inspiration
 
-The project was inspired by [Lobe.ai](https://lobe.ai/). Initially I planned to make a simple UWP app on Windows IoT Core. 
+The project was inspired by [Lobe](https://lobe.ai/). Initially I planned to make a simple UWP app and run it on Windows IoT Core. 
 
 Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=windows).
-
 
 # Hardware 
 
 * Raspberry Pi 4 B 2GB 
 * Transparent case by Multicomp
 * [Official USB-C Power Supply](https://www.raspberrypi.org/products/type-c-power-supply/) (DC 5.1 3A output)
+* Laptop running Windows 10
+* Ethernet cable to connect the Pi to the laptop or to the router (not needed if installing headed Raspberry Pi)
 
 
 # Part A. Pi Setup  
+
+The steps below use a headless (no UI version) of Raspberry PI OS. It's totally OK to use a full version of the Raspberry Pi OS - this makes finding the ip easier but requires a monitor, a keyboard, and a mouse. 
 
 1. Download the Raspberry Pi OS imager, e.g. from https://www.raspberrypi.org/software/   
 1. Install and run the imager
@@ -64,10 +74,10 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
      ![Wifi Setup 2](/help/images/Config-wifi-2.png "Wifi setup - step 2")
      ![Wifi Setup 2](/help/images/Config-wifi-3.png "Wifi setup - step 3")
    1. Wait a bit and confirm that the date and time have been synced
-     ```
-     pi@raspberrypi:~ $ date
-     Sat 26 Dec 22:21:27 GMT 2020
-     ```
+      ```
+      pi@raspberrypi:~ $ date
+      Sat 26 Dec 22:21:27 GMT 2020
+      ```
 1. Setup timezone:
    ```
    pi@raspberrypi:~ $ sudo raspi-config
@@ -98,10 +108,9 @@ Then I found [Custom Vision + Azure IoT Edge on a Raspberry Pi 3](https://docs.m
 1. Get VS Code IoT Edge extension
 1. From the left bar select the Azure extension and see if your Azure subscription is selected.
    Please note that it took > 5 minutes and/or VS Code rester for the freshly created subscription to appear. 
-1. Azure CLI
+1. [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
 1. Oher normal dev software:
    1. git
-   1. git config --global credential.helper wincred
    
 
 # Part C. Cloud setup 
@@ -280,7 +289,7 @@ We've created a device using Azure CLI earlier so we don't need to create it.
 
 # (Optional) Part F. Deploy a simulated temperature module 
 
-Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux?view=iotedge-2018-06#deploy-a-module) from *Quickstart: Deploy your first IoT Edge module to a virtual Linux device*.
+Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux?view=iotedge-2018-06#deploy-a-module) from *[Quickstart: Deploy your first IoT Edge module to a virtual Linux device](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux?view=iotedge-2018-06)*.
 
 **It's best to follow the original article as it has screenshots and explanations!**
 
@@ -338,6 +347,26 @@ Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quic
    ![Watching events in VS Code 2](/help/images/VS_Code_monitoring_events_2.png "Watching events in VS Code 2") 
 
 
-# (Optional) Part G. Build a custom module
+# Part G. Build a custom IoT module
 
+Based on [Tutorial: Develop IoT Edge modules for Linux devices](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06)
+
+This module will run the image classifier. The machine learning module will **not** be added; not yet. 
+
+# Part H. Create, train and export Lobe model.
+
+TODO
+
+Based on [Lobe Tour](https://lobe.ai/tour). Thanks Jake!
+
+1. Download [Lobe](https://lobe.ai/).
+1. Train an image classifier
+1. 
+
+
+# Part I. Run Lobe model in Iot Edge module
+
+TODO
+
+Based on [.NET libraries for Lobe](https://github.com/lobe/lobe.NET)
 
