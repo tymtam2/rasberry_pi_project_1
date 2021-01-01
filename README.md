@@ -1,3 +1,16 @@
+- [Introduction](#introduction)
+- [Inspiration](#inspiration)
+- [Hardware](#hardware)
+- [Part A. Pi Setup](#part-a-pi-setup)
+- [Part B. Dev environment setup](#part-b-dev-environment-setup)
+- [Part C. Cloud setup](#part-c-cloud-setup)
+- [Part D. Install IoT Edge on Pi](#part-d-install-iot-edge-on-pi)
+- [Part E. Connect to IoT Hub](#part-e-connect-to-iot-hub)
+- [(Optional) Part F. Deploy a simulated temperature module](#optional-part-f-deploy-a-simulated-temperature-module)
+- [Part G. Build a custom IoT module](#part-g-build-a-custom-iot-module)
+- [Part H. Create, train and export Lobe model.](#part-h-create-train-and-export-lobe-model)
+- [Part I. Run Lobe model in Iot Edge module](#part-i-run-lobe-model-in-iot-edge-module)
+
 # Introduction
 
 This repo documents steps for building and deploying
