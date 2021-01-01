@@ -8,6 +8,7 @@
 - [Part E. Connect to IoT Hub](#part-e-connect-to-iot-hub)
 - [(Optional) Part F. Deploy a simulated temperature module](#optional-part-f-deploy-a-simulated-temperature-module)
 - [Part G. Build and deploy a custom IoT module](#part-g-build-and-deploy-a-custom-iot-module)
+  - [Create a new module project](#create-a-new-module-project)
 - [Part H. Create, train and export Lobe model](#part-h-create-train-and-export-lobe-model)
 - [Part I. Run Lobe model in Iot Edge module](#part-i-run-lobe-model-in-iot-edge-module)
 
@@ -371,7 +372,7 @@ This module will run the image classifier. The machine learning module will **no
    2. (Not sure if required) Restart Windows. ;(
 2. [Set up VS Code and tools](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#set-up-vs-code-and-tools) - that's VS Code and the IoT Edge extension - done in prevoius steps
 3. [Create a container registry](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-container-registry)
-   Pricing details: Basic - price per day $0.167 
+   **Pricing details: Basic - price per day $0.167** 
    TODO Switch to Docker Hub (if free/cheaper)
    1. Create at Basic tier.  
       ![Creating Container Registry](/help/images/CreatingContainerRegistry_1.png "Creating Container Registry 1") 
@@ -381,8 +382,25 @@ This module will run the image classifier. The machine learning module will **no
       ![Container Registry Access Keys](/help/images/CreatingContainerRegistry_3.png "Container Registry Access Keys") 
       ![Container Registry Access Keys - Admin Access](/help/images/CreatingContainerRegistry_4.png "Container Registry Access Keys - Admin Access") 
    3. Note the url, username and a password
-4. [Create a new module project](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-new-module-project)
-   1. 
+
+## Create a new module project 
+
+Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-new-module-project)
+
+1. Create a new empty folder for the code and open it in VS Code
+2. In VS Code F1 (Open command palette) and find *Azure IoT Edge: New IoT Edge Solution*
+   ![VS Code: New IoT Edge Solution 1](/help/images/CreatingModule_1.png "VS Code: New IoT Edge Solution 1") 
+   1. Solution name: *ImageClassifierSolution1*
+   2. Template: *C# Module*
+   3. Module Name: *ImageClassifierModule1*
+   4. Image repository (do *not* leave it as *localhost:5000*): *ttregistry1.azurecr.io/ImageClassifierModule1* 
+3. After VS Code Restarts, admire the solution structure. It's described in [Create a project template](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-new-module-project)
+4. Insect the .env file and confirm if the username and password is set. 
+   ![.env file](/help/images/CreatingModule_env_file.png ".env file") 
+5. Set the target architecture for the module:
+   1. Visit the Pi's spec page, for example: [Raspberry Pi 4 Tech Specs](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/specifications/):
+      *Broadcom BCM2711, Quad core Cortex-A72 (ARM v8) 64-bit SoC @ 1.5GHz*
+
 
 # Part H. Create, train and export Lobe model
 
@@ -391,8 +409,8 @@ TODO
 Based on [Lobe Tour](https://lobe.ai/tour). Thanks Jake!
 
 1. Download [Lobe](https://lobe.ai/).
-1. Train an image classifier
-1. 
+2. Train an image classifier
+3. 
 
 
 # Part I. Run Lobe model in Iot Edge module
