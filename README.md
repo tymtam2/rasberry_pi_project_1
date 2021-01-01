@@ -7,8 +7,8 @@
 - [Part D. Install IoT Edge on Pi](#part-d-install-iot-edge-on-pi)
 - [Part E. Connect to IoT Hub](#part-e-connect-to-iot-hub)
 - [(Optional) Part F. Deploy a simulated temperature module](#optional-part-f-deploy-a-simulated-temperature-module)
-- [Part G. Build a custom IoT module](#part-g-build-a-custom-iot-module)
-- [Part H. Create, train and export Lobe model.](#part-h-create-train-and-export-lobe-model)
+- [Part G. Build and deploy a custom IoT module](#part-g-build-and-deploy-a-custom-iot-module)
+- [Part H. Create, train and export Lobe model](#part-h-create-train-and-export-lobe-model)
 - [Part I. Run Lobe model in Iot Edge module](#part-i-run-lobe-model-in-iot-edge-module)
 
 # Introduction
@@ -360,13 +360,31 @@ Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quic
    ![Watching events in VS Code 2](/help/images/VS_Code_monitoring_events_2.png "Watching events in VS Code 2") 
 
 
-# Part G. Build a custom IoT module
+# Part G. Build and deploy a custom IoT module
 
 Based on [Tutorial: Develop IoT Edge modules for Linux devices](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06)
 
-This module will run the image classifier. The machine learning module will **not** be added; not yet. 
+This module will run the image classifier. The machine learning module will **not** be added; not yet.
 
-# Part H. Create, train and export Lobe model.
+1. [Install container engine](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#install-container-engine)
+   1. [Install Docker Desktop on Windows](https://docs.docker.com/docker-for-windows/install/) @457MB
+   2. (Not sure if required) Restart Windows. ;(
+2. [Set up VS Code and tools](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#set-up-vs-code-and-tools) - that's VS Code and the IoT Edge extension - done in prevoius steps
+3. [Create a container registry](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-container-registry)
+   Pricing details: Basic - price per day $0.167 
+   TODO Switch to Docker Hub (if free/cheaper)
+   1. Create at Basic tier.  
+      ![Creating Container Registry](/help/images/CreatingContainerRegistry_1.png "Creating Container Registry 1") 
+      ![Creating Container Registry](/help/images/CreatingContainerRegistry_2.png "Creating Container Registry 2") 
+   1. Once created, go to the resource.
+   2. Go to *Access Keys* and enable admin acces
+      ![Container Registry Access Keys](/help/images/CreatingContainerRegistry_3.png "Container Registry Access Keys") 
+      ![Container Registry Access Keys - Admin Access](/help/images/CreatingContainerRegistry_4.png "Container Registry Access Keys - Admin Access") 
+   3. Note the url, username and a password
+4. [Create a new module project](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-new-module-project)
+   1. 
+
+# Part H. Create, train and export Lobe model
 
 TODO
 
