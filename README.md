@@ -9,7 +9,7 @@
 - [(Optional) Part F. Deploy a simulated temperature module](#optional-part-f-deploy-a-simulated-temperature-module)
 - [Part G. Build and deploy a custom IoT module](#part-g-build-and-deploy-a-custom-iot-module)
   - [Create a new module - C# project](#create-a-new-module---c-project)
-  - [Build, deploy, test](#build-deploy-test)
+  - [Build, push, deploy, test](#build-push-deploy-test)
 - [Part H. Create, train and export Lobe model](#part-h-create-train-and-export-lobe-model)
 - [Part I. Run Lobe model in Iot Edge module](#part-i-run-lobe-model-in-iot-edge-module)
 
@@ -94,7 +94,7 @@ The steps below use a headless (no UI version) of Raspberry PI OS. It's totally 
       Sat 26 Dec 22:21:27 GMT 2020
       ```
 1. Setup timezone:
-   ```
+   ```bash
    pi@raspberrypi:~ $ sudo raspi-config
   
 
@@ -201,7 +201,7 @@ For a more secure - and the recommended way for production scenarios - you can f
 We've created a device using Azure CLI earlier so we don't need to create it. 
 
 1. We need the devices's connection string. This can be done via Azure CLI or in VS Code:
-   1. ```
+   1. ```powershell
       PS C:\Users\letss> az iot hub device-identity connection-string show --device-id d1 --hub-name myhub1
       {
          "connectionString": "HostName=myhub1.azure-devices.net;DeviceId=d1;SharedAccessKey=t5f/1...MKI="
@@ -219,7 +219,7 @@ We've created a device using Azure CLI earlier so we don't need to create it.
   1. `sudo systemctl restart iotedge`
 1. [Verify successful setup](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=visual-studio-code%2Clinux#verify-successful-setup)  
   1. Check the status of the IoT Edge service. It should be listed as running: `systemctl status iotedge`
-      ```
+      ```bash
       pi@raspberrypi:~ $ systemctl status iotedge
       ● iotedge.service - Azure IoT Edge daemon
          Loaded: loaded (/lib/systemd/system/iotedge.service; enabled; vendor preset: enabled)
@@ -243,7 +243,7 @@ We've created a device using Azure CLI earlier so we don't need to create it.
       ```
    1. Examine service logs: `journalctl -u iotedge --no-pager --no-full`
    1. Run the checks:
-      ```
+      ```bash
       pi@raspberrypi:~ $ sudo iotedge check --verbose
       Configuration checks
       --------------------
@@ -320,7 +320,7 @@ Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quic
 1. Create the manifest
 1. Back on the device check if the device obtained the new device and runs the new module. 
    edgeAgent's module logs will confirm that the new configuration is obtained
-   ```
+   ```bash
    pi@raspberrypi:~ $ sudo iotedge logs edgeAgent -f
    <6> 2020-12-30 23:17:40.335 +00:00 [INF] - Edge agent attempting to connect to IoT Hub via Amqp_Tcp_Only...
    <6> 2020-12-30 23:17:40.812 +00:00 [INF] - Edge agent connected to IoT Hub via Amqp_Tcp_Only.
@@ -345,7 +345,7 @@ Following [Deploy a module](https://docs.microsoft.com/en-us/azure/iot-edge/quic
    pi@raspberrypi:~ $
    ```
 1. Observe the new module's logs
-   ```
+   ```bash
    pi@raspberrypi:~ $ sudo iotedge logs SimulatedTemperatureSensor --follow
    [2020-12-30 23:17:55 +00:00]: Starting Module
    SimulatedTemperatureSensor Main() started.
@@ -401,14 +401,22 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
 5. Set the target architecture for the module:
    1. Visit the Pi's spec page, for example: [Raspberry Pi 4 Tech Specs](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/specifications/):
       Broadcom BCM2711, Quad core Cortex-A72 (ARM v8) 64-bit SoC @ 1.5GHz
-   1. In Command palette find *Azure IoT Edge: Set Default Target Platform for Edge Solution* and set it to, for RPi 4, to *arm64v8*
+   1. ssh to onto the device 
+      ```
+      pi@raspberrypi:~ $ uname -a
+      Linux raspberrypi 5.4.79-v7l+ #1373 SMP Mon Nov 23 13:27:40 GMT 2020 armv7l GNU/Linux
+      pi@raspberrypi:~ $ uname -m
+      armv7l
+      ```
+      If it's *armv7l* then the OS is 32-bit
+   2. In Command palette find *Azure IoT Edge: Set Default Target Platform for Edge Solution* and set it to, for RPi 4, to *arm64v8*
 6. Open *deployment.template.json* and examine *moduleContent->$edgeAgent->properties.desired->modules*
    There will be to modules there, because *SimulatedTemperatureSensor* is added by default to template solutions.\
    ![Two default modules](/help/images/CreatingModule_2_modules.png "Two default modules") 
 7. Delete *SimulatedTemperatureSensor* entries from *deployment.debug.template.json* and from *deployment.template.json*. Delete it from modules and routes - 4 elements need to be deleted.\
    ![Deleting SimulatedTemperatureSenson](/help/images/CreatingModule_deleting_SimulatedTemperatureSensor.png "Deleting SimulatedTemperatureSensor")
 8. Have a look at the C# source code: *raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Program.cs* and follow [Review the sample code](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#review-the-sample-code)
-9. Add a direct method for easy testing. At the end of the `Init` method add
+9.  Add a direct method for easy testing. At the end of the `Init` method add
    ```c#
       await ioTHubModuleClient.SetMethodHandlerAsync("alive", AliveHandler, ioTHubModuleClient);
    }
@@ -424,65 +432,130 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
       return Task.FromResult(response);
    }
    ``` 
-## Build, deploy, test
+## Build, push, deploy, test
 
 1. Sign into Docker
    1. In VS Code, open terminal
    2. `docker login -u <ACR username> <ACR login server>` where the missing pieces are form the step when Azure Container Registry was created\
-      ```
+      ```powershell
       PS C:\Users\letss> docker login -u ttregistry1  ttregistry1.azurecr.io                                   
       Password: 
       Login Succeeded
       PS C:\Users\letss> 
       ```
-   3. Still in VS Code's terminal, login to Azure Container Registry
-      ```
+1. Still in VS Code's terminal, login to Azure Container Registry
+      ```powershell
       PS C:\Users\letss> az acr login -n ttregistry1.azurecr.io
       The login server endpoint suffix '.azurecr.io' is automatically omitted.
       Login Succeeded
       PS C:\Users\letss> 
       ```
-   4. Right-click `deployment.template.json` and select build and push\
-      ![Build and push](/help/images/CreatingModule_builld_and_push.png "Build and push")\
-      The terminal output looks like this:
+2. Right-click `deployment.template.json` and select build and push.\
+   ![Build and push](/help/images/CreatingModule_builld_and_push.png "Build and push")\
+   This process is slow when it runs for the first time.\
+   The terminal output looks like this:
+   ```powershell
+   PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> docker build  --rm -f "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Dockerfile.arm64v8" -t ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8 "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1" ; if ($?) { docker push ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8 }
+   [+] Building 333.6s (16/16) FINISHED
+   => [internal] load build definition from Dockerfile.arm64v8                                       0.2s 
+   => => transferring dockerfile: 453B                                                               0.0s 
+   => [internal] load .dockerignore                                                                  0.2s 
+   => => transferring context: 56B                                                                   0.0s 
+   => [internal] load metadata for mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8     7.4s 
+   => [internal] load metadata for mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm64v              83.6s 
+   => [stage-1 1/4] FROM mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8@sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc        73.2s 
+   => => resolve mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8@sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc                 0.0s 
+   => => sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc 1.16kB / 1.16kB     0.0s 
+   (...)
+   => => extracting sha256:c5a03329e69979c6a5979123a157a937837a969677bf126e4d1ededb39300295          0.8s 
+   => [stage-1 2/4] WORKDIR /app                                                                     2.0s 
+   => [build-env 2/6] WORKDIR /app                                                                   1.7s 
+   => [build-env 3/6] COPY *.csproj ./                                                               0.2s 
+   => [build-env 4/6] RUN dotnet restore                                                           132.8s 
+   => [build-env 5/6] COPY . ./                                                                      0.1s 
+   => [build-env 6/6] RUN dotnet publish -c Release -o out                                          98.1s 
+   => [stage-1 3/4] COPY --from=build-env /app/out ./                                                0.2s 
+   => [stage-1 4/4] RUN useradd -ms /bin/bash moduleuser                                             0.6s
+   => exporting to image                                                                             0.2s 
+   => => exporting layers                                                                            0.2s
+   => => writing image sha256:9c1bd97151d1f71a719c3c609a8a1e5c5de9d28140c4aecdfdecaf6d2d388211       0.0s 
+   => => naming to ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8                       0.0s 
+   The push refers to repository [ttregistry1.azurecr.io/imageclassifiermodule1]
+   db2fc4848a13: Pushed
+   f02421fd1a6d: Pushed
+   ef2f16536cd0: Pushed
+   c0fe983dfcca: Pushed
+   f1b09a481fdc: Pushed
+   3c56c0866069: Pushed
+   037e397fa13b: Pushed
+   0.0.1-arm64v8: digest: sha256:93a1e47f057cabf2f05b1c4c6fb3f3c942c1869e445603f01086df8a440284ec size: 1790
+   PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> 
+   ```
+1. (Optional) Confirm in the Azure portal that the module is there\
+   ![Pushed module](/help/images/CreatingModule_in_container_registry.png "Pushed module")
+1. Find and open `module.json` and make a mental note that this is where module version is stored. 
+1. Again in VS Code, in the IoT extension, find the device, right click and select *Create Deployment for Single Device*\
+   ![Creating deployment](/images/help/CreatingModule_creating_deployment.png "Creating deployment")
+1. Navigate to *config/deployment.arm64v8.json* file and select it\
+   ![Creating deployemnt - choosing file](/images/help/CreatingModule_creating_deployment_2.png "Creating deployment - choosing file")
+1. Inspect the device in the IoT extension and check the log messages.\
+   ![Creating deployment - confirming](/images/help/CreatingModule_creating_deployment_3.png "Creating deployment - confirming")
+1. Inspect device's logs
+   1. ssh to the device, in a different terminal: *ssh pi@ip_here*
+   2. `journalctl -u iotedge --no-pager --no-full`\
+      ```log
+      [INFO] - [work] - - - [2021-01-03 04:36:36.209076498 UTC] "POST /modules/%24edgeAgent/genid/637443678223906350/encrypt?api-version=2020-07-07…"-" "-" auth_id(-)
+      [INFO] - [mgmt] - - - [2021-01-03 04:36:36.463824660 UTC] "GET /identities/?api-version=2020-07-07 HTTP/1.1" 200 OK 326 "-" "-" auth_id(-)
+      [INFO] - [mgmt] - - - [2021-01-03 04:36:36.605057017 UTC] "DELETE /identities/SimulatedTemperatureSensor?api-version=2020-07-07 HTTP/1.1" 204…"-" "-" auth_id(-)
+      [INFO] - [mgmt] - - - [2021-01-03 04:36:36.818137757 UTC] "PUT /identities/%24edgeHub?api-version=2020-07-07 HTTP/1.1" 200 OK 98 "-" "-" auth_id(-)
+      [INFO] - [mgmt] - - - [2021-01-03 04:36:36.864481924 UTC] "POST /identities/?api-version=2020-07-07 HTTP/1.1" 200 OK 112 "-" "-" auth_id(-)
+      [INFO] - Stopping module SimulatedTemperatureSensor...
+      [INFO] - [work] - - - [2021-01-03 04:36:37.244094053 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - [work] - - - [2021-01-03 04:36:37.290317999 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/encrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - [work] - - - [2021-01-03 04:36:37.331660200 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - [work] - - - [2021-01-03 04:36:37.373273029 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/encrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - Successfully stopped module SimulatedTemperatureSensor
+      [INFO] - [mgmt] - - - [2021-01-03 04:36:37.609487427 UTC] "POST /modules/SimulatedTemperatureSensor/stop?api-version=2020-07-07 HTTP/1.1" 204…"-" "-" auth_id(-)
+      [INFO] - [work] - - - [2021-01-03 04:36:37.674082230 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - Removing module SimulatedTemperatureSensor...
+      [INFO] - Successfully removed module SimulatedTemperatureSensor
+      [INFO] - [mgmt] - - - [2021-01-03 04:36:37.715949261 UTC] "DELETE /modules/SimulatedTemperatureSensor?api-version=2020-07-07 HTTP/1.1" 204 No…"-" "-" auth_id(-)
+      [INFO] - [work] - - - [2021-01-03 04:36:37.747326900 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - Pulling image ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8...
+      [INFO] - [work] - - - [2021-01-03 04:36:37.949064624 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - [work] - - - [2021-01-03 04:36:37.994590390 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/encrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - [work] - - - [2021-01-03 04:36:38.041809644 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
+      [INFO] - Checking edge runtime status
+      [INFO] - Edge runtime is running.
+      [INFO] - Successfully pulled image ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8
+      [INFO] - Creating module ImageClassifierModule1...
+      [INFO] - Successfully created module ImageClassifierModule1
+      [INFO] - [mgmt] - - - [2021-01-03 04:37:19.347262866 UTC] "POST /modules?api-version=2020-07-07 HTTP/1.1" 201 Created 1058 "-" "-" auth_id(-)
+      [INFO] - Starting module ImageClassifierModule1...
+      [INFO] - Successfully started module ImageClassifierModule1
+      [INFO] - [mgmt] - - - [2021-01-03 04:37:20.364979482 UTC] "POST /modules/ImageClassifierModule1/start?api-version=2020-07-07 HTTP/1.1" 204 No…"-" "-" auth_id(-)
+      [INFO] - Pulling image mcr.microsoft.com/azureiotedge-hub:1.0...
+      [INFO] - Successfully pulled image mcr.microsoft.com/azureiotedge-hub:1.0
+      [INFO] - [mgmt] - - - [2021-01-03 04:37:23.095349350 UTC] "POST /modules/edgeHub/prepareupdate?api-version=2020-07-07 HTTP/1.1" 204 No Conten…"-" "-" auth_id(-)
+      [INFO] - Stopping module edgeHub...
+      [INFO] - Successfully stopped module edgeHub
+      [INFO] - [mgmt] - - - [2021-01-03 04:37:34.008127214 UTC] "POST /modules/edgeHub/stop?api-version=2020-07-07 HTTP/1.1" 204 No Content - "-" "-" auth_id(-)
+      [INFO] - Updating module edgeHub
+      [INFO] - Removing module edgeHub...
+      [INFO] - Successfully removed module edgeHub
+      [INFO] - Pulling image mcr.microsoft.com/azureiotedge-hub:1.0...
+      [INFO] - Successfully pulled image mcr.microsoft.com/azureiotedge-hub:1.0
+      [INFO] - Creating module edgeHub...
+      [INFO] - Successfully created module edgeHub
+      [INFO] - [mgmt] - - - [2021-01-03 04:37:36.332257504 UTC] "PUT /modules/edgeHub?api-version=2020-07-07 HTTP/1.1" 200 OK 1018 "-" "-" auth_id(-)
+      [INFO] - Starting module edgeHub...
+      [INFO] - Successfully started module edgeHub
       ```
-      PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> docker build  --rm -f "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Dockerfile.arm64v8" -t ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8 "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1" ; if ($?) { docker push ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8 }
-      [+] Building 333.6s (16/16) FINISHED
-      => [internal] load build definition from Dockerfile.arm64v8                                             0.2s 
-      => => transferring dockerfile: 453B                                                 0.0s 
-      => [internal] load .dockerignore                                                    0.2s 
-      => => transferring context: 56B                                                     0.0s 
-      => [internal] load metadata for mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8                                             7.4s 
-      => [internal] load metadata for mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm64v83.6s 
-      => [stage-1 1/4] FROM mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8@sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc                                    73.2s 
-      => => resolve mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8@sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc                                             0.0s 
-      => => sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc 1.16kB / 1.16kB                                             0.0s 
-      (...)
-      => => extracting sha256:c5a03329e69979c6a5979123a157a937837a969677bf126e4d1ededb39300295                                                  0.8s 
-      => [stage-1 2/4] WORKDIR /app 2.0s 
-      => [build-env 2/6] WORKDIR /app                                                     1.7s 
-      => [build-env 3/6] COPY *.csproj ./                                                 0.2s 
-      => [build-env 4/6] RUN dotnet restore                                             132.8s 
-      => [build-env 5/6] COPY . ./  0.1s 
-      => [build-env 6/6] RUN dotnet publish -c Release -o out                            98.1s 
-      => [stage-1 3/4] COPY --from=build-env /app/out ./                                  0.2s 
-      => [stage-1 4/4] RUN useradd -ms /bin/bash moduleuser                               0.6s
-      => exporting to image         0.2s 
-      => => exporting layers        0.2s
-      => => writing image sha256:9c1bd97151d1f71a719c3c609a8a1e5c5de9d28140c4aecdfdecaf6d2d388211                                               0.0s 
-      => => naming to ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8         0.0s 
-      The push refers to repository [ttregistry1.azurecr.io/imageclassifiermodule1]
-      db2fc4848a13: Pushed
-      f02421fd1a6d: Pushed
-      ef2f16536cd0: Pushed
-      c0fe983dfcca: Pushed
-      f1b09a481fdc: Pushed
-      3c56c0866069: Pushed
-      037e397fa13b: Pushed
-      0.0.1-arm64v8: digest: sha256:93a1e47f057cabf2f05b1c4c6fb3f3c942c1869e445603f01086df8a440284ec size: 1790
-      PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> 
-      ```
-
+2. Test the alive direct method
+   1. In the IoT extension, right-click on the device and select *Invoke Device Direct Method*\
+      ![Deployment - testing](/images/help/CreatingModule_testing.png.png "Deployment - confirming")
+   2. Type *alive*
+   3. Fail
 
 # Part H. Create, train and export Lobe model
 
