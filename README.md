@@ -515,11 +515,11 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
    ![Pushed module](/help/images/CreatingModule_in_container_registry.png "Pushed module")
 1. Find and open `module.json` and make a mental note that this is where module version is stored. 
 1. Again in VS Code, in the IoT extension, find the device, right click and select *Create Deployment for Single Device*\
-   ![Creating deployment](/images/help/CreatingModule_creating_deployment.png "Creating deployment")
+   ![Creating deployment](/help/images/CreatingModule_creating_deployment.png "Creating deployment")
 1. Navigate to *config/deployment.arm64v8.json* file and select it\
-   ![Creating deployemnt - choosing file](/images/help/CreatingModule_creating_deployment_2.png "Creating deployment - choosing file")
+   ![Creating deployemnt - choosing file](/help/images/CreatingModule_creating_deployment_2.png "Creating deployment - choosing file")
 1. Inspect the device in the IoT extension and check the log messages.\
-   ![Creating deployment - confirming](/images/help/CreatingModule_creating_deployment_3.png "Creating deployment - confirming")
+   ![Creating deployment - confirming](/help/images/CreatingModule_creating_deployment_3.png "Creating deployment - confirming")
 1. Inspect device's logs
    1. ssh to the device, in a different terminal: *ssh pi@ip_here*
    2. `journalctl -u iotedge --no-pager --no-full`\
@@ -534,7 +534,7 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
       ```
 2. Test the alive direct method
    1. In the IoT extension, right-click on the module, *NOT* on the device, and select *Invoke Module Direct Method*\
-      ![Deployment - testing](/images/help/CreatingModule_testing.png "Deployment - testing")
+      ![Deployment - testing](/help/images/CreatingModule_testing.png "Deployment - testing")
    2. Type *alive*
    3. No content; [Enter]
    4. The output should be something like this: 
@@ -550,7 +550,7 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
       }
       }
       ```
-      ![Deployment - testing result](/images/help/CreatingModule_testing_2.png "Deployment - testing result")
+      ![Deployment - testing result](/help/images/CreatingModule_testing_2.png "Deployment - testing result")
 
 # Part H. Create, train and export Lobe model
 
