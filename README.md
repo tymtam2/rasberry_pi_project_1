@@ -375,11 +375,11 @@ This module will run the image classifier. The machine learning module will **no
    **Pricing details: Basic - price per day $0.167** 
    TODO Switch to Docker Hub (if free/cheaper)
    1. Create at Basic tier.\
-      ![Creating Container Registry](/help/images/CreatingContainerRegistry_1.png "Creating Container Registry 1") 
+      ![Creating Container Registry](/help/images/CreatingContainerRegistry_1.png "Creating Container Registry 1")\
       ![Creating Container Registry](/help/images/CreatingContainerRegistry_2.png "Creating Container Registry 2") 
       1. Once created, go to the resource.
    2. Go to *Access Keys* and enable admin access.\
-      ![Container Registry Access Keys](/help/images/CreatingContainerRegistry_3.png "Container Registry Access Keys") 
+      ![Container Registry Access Keys](/help/images/CreatingContainerRegistry_3.png "Container Registry Access Keys")\
       ![Container Registry Access Keys - Admin Access](/help/images/CreatingContainerRegistry_4.png "Container Registry Access Keys - Admin Access") 
    3. Note the url, username and a password
 
