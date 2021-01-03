@@ -52,6 +52,19 @@ namespace ImageClassifierModule1
 
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
+
+            await ioTHubModuleClient.SetMethodHandlerAsync("alive", AliveHandler, ioTHubModuleClient);
+        }
+
+        private static Task<MethodResponse> AliveHandler(MethodRequest methodRequest, object userContext)
+        {
+            var nowUtc = DateTime.UtcNow;
+            var o = new { Status = "OK", NowUtc = nowUtc, NowLocal = nowUtc.ToLocalTime() };
+            var json = System.Text.Json.JsonSerializer.Serialize(o);
+            var bytes = Encoding.UTF8.GetBytes(json);
+
+            var response = new MethodResponse(bytes, (int) System.Net.HttpStatusCode.OK);
+            return Task.FromResult(response);
         }
 
         /// <summary>

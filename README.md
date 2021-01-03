@@ -9,6 +9,7 @@
 - [(Optional) Part F. Deploy a simulated temperature module](#optional-part-f-deploy-a-simulated-temperature-module)
 - [Part G. Build and deploy a custom IoT module](#part-g-build-and-deploy-a-custom-iot-module)
   - [Create a new module - C# project](#create-a-new-module---c-project)
+  - [Build, deploy, test](#build-deploy-test)
 - [Part H. Create, train and export Lobe model](#part-h-create-train-and-export-lobe-model)
 - [Part I. Run Lobe model in Iot Edge module](#part-i-run-lobe-model-in-iot-edge-module)
 
@@ -377,7 +378,7 @@ This module will run the image classifier. The machine learning module will **no
    1. Create at Basic tier.\
       ![Creating Container Registry](/help/images/CreatingContainerRegistry_1.png "Creating Container Registry 1")\
       ![Creating Container Registry](/help/images/CreatingContainerRegistry_2.png "Creating Container Registry 2") 
-      1. Once created, go to the resource.
+   1. Once created, go to the resource.
    2. Go to *Access Keys* and enable admin access.\
       ![Container Registry Access Keys](/help/images/CreatingContainerRegistry_3.png "Container Registry Access Keys")\
       ![Container Registry Access Keys - Admin Access](/help/images/CreatingContainerRegistry_4.png "Container Registry Access Keys - Admin Access") 
@@ -388,26 +389,99 @@ This module will run the image classifier. The machine learning module will **no
 Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-new-module-project) and [Use Visual Studio Code to develop and debug modules for Azure IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-vs-code-develop-module?view=iotedge-2018-06)
 
 1. Create a new empty folder for the code and open it in VS Code
-2. In VS Code F1 (Open command palette) and find *Azure IoT Edge: New IoT Edge Solution*
+2. In VS Code F1 (Open command palette) and find *Azure IoT Edge: New IoT Edge Solution*\
    ![VS Code: New IoT Edge Solution 1](/help/images/CreatingModule_1.png "VS Code: New IoT Edge Solution 1") 
    1. Solution name: *ImageClassifierSolution1*
    2. Template: *C# Module*
    3. Module Name: *ImageClassifierModule1*
    4. Image repository (do *not* leave it as *localhost:5000*): *ttregistry1.azurecr.io/ImageClassifierModule1* 
 3. After VS Code Restarts, admire the solution structure. It's described in [Create a project template](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-new-module-project)
-4. Insect the .env file and confirm if the username and password is set. 
+4. Insect the .env file and confirm if the username and password is set.\
    ![.env file](/help/images/CreatingModule_env_file.png ".env file") 
 5. Set the target architecture for the module:
    1. Visit the Pi's spec page, for example: [Raspberry Pi 4 Tech Specs](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/specifications/):
       Broadcom BCM2711, Quad core Cortex-A72 (ARM v8) 64-bit SoC @ 1.5GHz
    1. In Command palette find *Azure IoT Edge: Set Default Target Platform for Edge Solution* and set it to, for RPi 4, to *arm64v8*
-   2. Open *deployment.template.json* and examine *moduleContent->$edgeAgent->properties.desired->modules*
-      There will be to modules there, because *SimulatedTemperatureSensor* is added by default to template solutions.
-      ![Two default modules](/help/images/CreatingModule_2_modules.png "Two default modules") 
-   3. Delete *SimulatedTemperatureSensor* entries from *deployment.debug.template.json* and from *deployment.template.json*. Delete it from modules and routes - 4 elements need to be deleted.
-      ![Deleting SimulatedTemperatureSenson](/help/images/CreatingModule_deleting_SimulatedTemperatureSensor.png "Deleting SimulatedTemperatureSensor")
-   4. Have a look at the C# source code: *raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Program.cs* and follow [Review the sample code](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#review-the-sample-code)
-   5. 
+6. Open *deployment.template.json* and examine *moduleContent->$edgeAgent->properties.desired->modules*
+   There will be to modules there, because *SimulatedTemperatureSensor* is added by default to template solutions.\
+   ![Two default modules](/help/images/CreatingModule_2_modules.png "Two default modules") 
+7. Delete *SimulatedTemperatureSensor* entries from *deployment.debug.template.json* and from *deployment.template.json*. Delete it from modules and routes - 4 elements need to be deleted.\
+   ![Deleting SimulatedTemperatureSenson](/help/images/CreatingModule_deleting_SimulatedTemperatureSensor.png "Deleting SimulatedTemperatureSensor")
+8. Have a look at the C# source code: *raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Program.cs* and follow [Review the sample code](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#review-the-sample-code)
+9. Add a direct method for easy testing. At the end of the `Init` method add
+   ```c#
+      await ioTHubModuleClient.SetMethodHandlerAsync("alive", AliveHandler, ioTHubModuleClient);
+   }
+
+   private static Task<MethodResponse> AliveHandler(MethodRequest methodRequest, object userContext)
+   {
+      var nowUtc = DateTime.UtcNow;
+      var o = new { Status = "OK", NowUtc = nowUtc, NowLocal = nowUtc.ToLocalTime() };
+      var json = System.Text.Json.JsonSerializer.Serialize(o);
+      var bytes = Encoding.UTF8.GetBytes(json);
+
+      var response = new MethodResponse(bytes, (int) System.Net.HttpStatusCode.OK);
+      return Task.FromResult(response);
+   }
+   ``` 
+## Build, deploy, test
+
+1. Sign into Docker
+   1. In VS Code, open terminal
+   2. `docker login -u <ACR username> <ACR login server>` where the missing pieces are form the step when Azure Container Registry was created\
+      ```
+      PS C:\Users\letss> docker login -u ttregistry1  ttregistry1.azurecr.io                                   
+      Password: 
+      Login Succeeded
+      PS C:\Users\letss> 
+      ```
+   3. Still in VS Code's terminal, login to Azure Container Registry
+      ```
+      PS C:\Users\letss> az acr login -n ttregistry1.azurecr.io
+      The login server endpoint suffix '.azurecr.io' is automatically omitted.
+      Login Succeeded
+      PS C:\Users\letss> 
+      ```
+   4. Right-click `deployment.template.json` and select build and push\
+      ![Build and push](/help/images/CreatingModule_builld_and_push.png "Build and push")\
+      The terminal output looks like this:
+      ```
+      PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> docker build  --rm -f "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Dockerfile.arm64v8" -t ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8 "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1" ; if ($?) { docker push ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8 }
+      [+] Building 333.6s (16/16) FINISHED
+      => [internal] load build definition from Dockerfile.arm64v8                                             0.2s 
+      => => transferring dockerfile: 453B                                                 0.0s 
+      => [internal] load .dockerignore                                                    0.2s 
+      => => transferring context: 56B                                                     0.0s 
+      => [internal] load metadata for mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8                                             7.4s 
+      => [internal] load metadata for mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm64v83.6s 
+      => [stage-1 1/4] FROM mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8@sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc                                    73.2s 
+      => => resolve mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8@sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc                                             0.0s 
+      => => sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc 1.16kB / 1.16kB                                             0.0s 
+      (...)
+      => => extracting sha256:c5a03329e69979c6a5979123a157a937837a969677bf126e4d1ededb39300295                                                  0.8s 
+      => [stage-1 2/4] WORKDIR /app 2.0s 
+      => [build-env 2/6] WORKDIR /app                                                     1.7s 
+      => [build-env 3/6] COPY *.csproj ./                                                 0.2s 
+      => [build-env 4/6] RUN dotnet restore                                             132.8s 
+      => [build-env 5/6] COPY . ./  0.1s 
+      => [build-env 6/6] RUN dotnet publish -c Release -o out                            98.1s 
+      => [stage-1 3/4] COPY --from=build-env /app/out ./                                  0.2s 
+      => [stage-1 4/4] RUN useradd -ms /bin/bash moduleuser                               0.6s
+      => exporting to image         0.2s 
+      => => exporting layers        0.2s
+      => => writing image sha256:9c1bd97151d1f71a719c3c609a8a1e5c5de9d28140c4aecdfdecaf6d2d388211                                               0.0s 
+      => => naming to ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8         0.0s 
+      The push refers to repository [ttregistry1.azurecr.io/imageclassifiermodule1]
+      db2fc4848a13: Pushed
+      f02421fd1a6d: Pushed
+      ef2f16536cd0: Pushed
+      c0fe983dfcca: Pushed
+      f1b09a481fdc: Pushed
+      3c56c0866069: Pushed
+      037e397fa13b: Pushed
+      0.0.1-arm64v8: digest: sha256:93a1e47f057cabf2f05b1c4c6fb3f3c942c1869e445603f01086df8a440284ec size: 1790
+      PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> 
+      ```
 
 
 # Part H. Create, train and export Lobe model
