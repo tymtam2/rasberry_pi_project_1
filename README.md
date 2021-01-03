@@ -519,8 +519,13 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
 1. Navigate to *config/deployment.arm64v8.json* file and select it\
    ![Creating deployemnt - choosing file](/help/images/CreatingModule_creating_deployment_2.png "Creating deployment - choosing file")
 1. Inspect the device in the IoT extension and check the log messages.\
+   ImageClassifierModule1 shoul be running (may need refreshing) and the Output in the terminal should show a sucess.
+   ```
+   [Edge] Start deployment to device [d1]
+   [Edge] Deployment succeeded.
+   ```
    ![Creating deployment - confirming](/help/images/CreatingModule_creating_deployment_3.png "Creating deployment - confirming")
-1. Inspect device's logs
+2. Inspect device's logs
    1. ssh to the device, in a different terminal: *ssh pi@ip_here*
    2. `journalctl -u iotedge --no-pager --no-full`\
       ```log
@@ -532,7 +537,7 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
       [INFO] - Starting module ImageClassifierModule1...
       [INFO] - Successfully started module ImageClassifierModule1
       ```
-2. Test the alive direct method
+3. Test the alive direct method
    1. In the IoT extension, right-click on the module, *NOT* on the device, and select *Invoke Module Direct Method*\
       ![Deployment - testing](/help/images/CreatingModule_testing.png "Deployment - testing")
    2. Type *alive*
