@@ -409,14 +409,19 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
       armv7l
       ```
       If it's *armv7l* then the OS is 32-bit
-   2. In Command palette find *Azure IoT Edge: Set Default Target Platform for Edge Solution* and set it to, for RPi 4, to *arm64v8*
-6. Open *deployment.template.json* and examine *moduleContent->$edgeAgent->properties.desired->modules*
+   2. In Command palette find *Azure IoT Edge: Set Default Target Platform for Edge Solution* and set it to, for RPi 4, to *arm32v7*
+6. In Dockerfile.arm32v7 change the first line from 
+   `FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm32v7 AS build-env`
+   to 
+   `FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build-env`\
+   More details in [github](https://github.com/Azure/iotedge/issues/3353). 
+7. Open *deployment.template.json* and examine *moduleContent->$edgeAgent->properties.desired->modules*
    There will be to modules there, because *SimulatedTemperatureSensor* is added by default to template solutions.\
    ![Two default modules](/help/images/CreatingModule_2_modules.png "Two default modules") 
-7. Delete *SimulatedTemperatureSensor* entries from *deployment.debug.template.json* and from *deployment.template.json*. Delete it from modules and routes - 4 elements need to be deleted.\
+8. Delete *SimulatedTemperatureSensor* entries from *deployment.debug.template.json* and from *deployment.template.json*. Delete it from modules and routes - 4 elements need to be deleted.\
    ![Deleting SimulatedTemperatureSenson](/help/images/CreatingModule_deleting_SimulatedTemperatureSensor.png "Deleting SimulatedTemperatureSensor")
-8. Have a look at the C# source code: *raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Program.cs* and follow [Review the sample code](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#review-the-sample-code)
-9.  Add a direct method for easy testing. At the end of the `Init` method add
+9.  Have a look at the C# source code: *raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Program.cs* and follow [Review the sample code](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#review-the-sample-code)
+10. Add a direct method for easy testing. At the end of the `Init` method add
    ```c#
       await ioTHubModuleClient.SetMethodHandlerAsync("alive", AliveHandler, ioTHubModuleClient);
    }
@@ -432,6 +437,7 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
       return Task.FromResult(response);
    }
    ``` 
+   
 ## Build, push, deploy, test
 
 1. Sign into Docker
@@ -453,33 +459,47 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
 2. Right-click `deployment.template.json` and select build and push.\
    ![Build and push](/help/images/CreatingModule_builld_and_push.png "Build and push")\
    This process is slow when it runs for the first time.\
+   If the process errors out with `#11 1.679 A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders` then it's likely it is a issue with build machine vs target machien architecture. Check architecture steps above and [github](https://github.com/Azure/iotedge/issues/3353). 
    The terminal output looks like this:
    ```powershell
-   PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> docker build  --rm -f "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Dockerfile.arm64v8" -t ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8 "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1" ; if ($?) { docker push ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8 }
-   [+] Building 333.6s (16/16) FINISHED
-   => [internal] load build definition from Dockerfile.arm64v8                                       0.2s 
-   => => transferring dockerfile: 453B                                                               0.0s 
-   => [internal] load .dockerignore                                                                  0.2s 
-   => => transferring context: 56B                                                                   0.0s 
-   => [internal] load metadata for mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8     7.4s 
-   => [internal] load metadata for mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm64v              83.6s 
-   => [stage-1 1/4] FROM mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8@sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc        73.2s 
-   => => resolve mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm64v8@sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc                 0.0s 
-   => => sha256:5e2794087a04b4c7db331cad5c394c07aa12b54895a32aa71f8789075df2afdc 1.16kB / 1.16kB     0.0s 
-   (...)
-   => => extracting sha256:c5a03329e69979c6a5979123a157a937837a969677bf126e4d1ededb39300295          0.8s 
-   => [stage-1 2/4] WORKDIR /app                                                                     2.0s 
-   => [build-env 2/6] WORKDIR /app                                                                   1.7s 
-   => [build-env 3/6] COPY *.csproj ./                                                               0.2s 
-   => [build-env 4/6] RUN dotnet restore                                                           132.8s 
-   => [build-env 5/6] COPY . ./                                                                      0.1s 
-   => [build-env 6/6] RUN dotnet publish -c Release -o out                                          98.1s 
-   => [stage-1 3/4] COPY --from=build-env /app/out ./                                                0.2s 
-   => [stage-1 4/4] RUN useradd -ms /bin/bash moduleuser                                             0.6s
-   => exporting to image                                                                             0.2s 
-   => => exporting layers                                                                            0.2s
-   => => writing image sha256:9c1bd97151d1f71a719c3c609a8a1e5c5de9d28140c4aecdfdecaf6d2d388211       0.0s 
-   => => naming to ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8                       0.0s 
+   PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> docker build  --rm -f "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Dockerfile.arm32v7" -t ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm32v7 "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1" ; if ($?) { docker push ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm32v7 }
+   [+] Building 318.9s (16/16) FINISHED
+   => [internal] load build definition from Dockerfile.arm32v7                                              0.1s 
+   => => transferring dockerfile: 445B                                                                      0.1s 
+   => [internal] load .dockerignore                                                                         0.1s 
+   => => transferring context: 34B                                                                          0.0s 
+   => [internal] load metadata for mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm32v7            1.3s 
+   => [internal] load metadata for mcr.microsoft.com/dotnet/core/sdk:3.1-buster                             2.2s 
+   => [internal] load build context                                                                         0.1s 
+   => => transferring context: 869B                                                                         0.0s 
+   => [build-env 1/6] FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster@sha256:27df774804cbf186cd05d5d997078765aec2f78ca6f63499bd06a698e99ea46a  71.5s 
+   => => resolve mcr.microsoft.com/dotnet/core/sdk:3.1-buster@sha256:27df774804cbf186cd05d5d997078765aec2f78ca6f63499bd06a698e99ea46a             0.0s 
+   => => sha256:c0afb8e68e0bcdc1b6e05acaa713a6fe0d818086c596bd1ad99133665c4efe63 10.00MB / 10.00MB          7.5s 
+   => => sha256:27df774804cbf186cd05d5d997078765aec2f78ca6f63499bd06a698e99ea46a 1.80kB / 1.80kB            0.0s 
+   => => sha256:6c33745f49b41daad28b7b192c447938452ea4de9fe8c7cc3edf1433b1366946 50.40MB / 50.40MB         17.7s 
+   => => sha256:abac622402fa6b9845058d25fb32d012e9b2ca9b1a90030ca416e85ef01d8635 6.33kB / 6.33kB            0.0s 
+   => => sha256:d599c07d28e6c920ef615f4f9b5cd0d52eb106fcd20c3a7daef389f14edd4ef5 51.83MB / 51.83MB         27.5s 
+   => => sha256:cd684fb45e33f8fe269a51339ebf07095b27d5f6849ca0b0818466e4c8771333 13.70MB / 13.70MB         17.1s 
+   => => sha256:de420d01940e6b081b3eb27161941c265e42eae1a147cd35138cee926a3b249a 13.26MB / 13.26MB         32.8s 
+   => => extracting sha256:6c33745f49b41daad28b7b192c447938452ea4de9fe8c7cc3edf1433b1366946                 5.1s 
+   => => extracting sha256:ef072fc32a84ef237dd4fcc7dff2c5e2a77565f24d63977d0fa654a6d8512dd8                 1.2s 
+   => => extracting sha256:c0afb8e68e0bcdc1b6e05acaa713a6fe0d818086c596bd1ad99133665c4efe63                 0.9s 
+   => => extracting sha256:d599c07d28e6c920ef615f4f9b5cd0d52eb106fcd20c3a7daef389f14edd4ef5                 6.8s 
+   => => extracting sha256:cd684fb45e33f8fe269a51339ebf07095b27d5f6849ca0b0818466e4c8771333                 2.4s 
+   => => extracting sha256:516d2ff1a7c41ff0a6f3ec1f4e0cd9d8afda9e4406c68def2cfa39f28c3a1db3                19.8s 
+   => => extracting sha256:de420d01940e6b081b3eb27161941c265e42eae1a147cd35138cee926a3b249a                 1.6s 
+   => [stage-1 1/4] FROM mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm32v7@sha256:cf16e40297f312d0bbcbb82e381366d9f4420709e23a2bf7cfea381f85374411     0.0s 
+   => CACHED [stage-1 2/4] WORKDIR /app                                                                     0.0s 
+   => [build-env 2/6] WORKDIR /app                                                                          4.7s 
+   => [build-env 3/6] COPY *.csproj ./                                                                      0.1s 
+   => [build-env 4/6] RUN dotnet restore                                                                  162.0s 
+   => [build-env 5/6] COPY . ./                                                                             5.2s 
+   => [build-env 6/6] RUN dotnet publish -c Release -o out                                                 71.0s 
+   => [stage-1 3/4] COPY --from=build-env /app/out ./                                                       0.2s 
+   => [stage-1 4/4] RUN useradd -ms /bin/bash moduleuser                                                    1.4s 
+   => exporting to image                                                                                    0.2s 
+   => => exporting layers                                                                                   0.2s 
+   => => naming to ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm32v7                              
    The push refers to repository [ttregistry1.azurecr.io/imageclassifiermodule1]
    db2fc4848a13: Pushed
    f02421fd1a6d: Pushed
@@ -490,7 +510,7 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
    037e397fa13b: Pushed
    0.0.1-arm64v8: digest: sha256:93a1e47f057cabf2f05b1c4c6fb3f3c942c1869e445603f01086df8a440284ec size: 1790
    PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> 
-   ```
+   ```  
 1. (Optional) Confirm in the Azure portal that the module is there\
    ![Pushed module](/help/images/CreatingModule_in_container_registry.png "Pushed module")
 1. Find and open `module.json` and make a mental note that this is where module version is stored. 
