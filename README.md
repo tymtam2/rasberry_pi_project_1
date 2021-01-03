@@ -459,7 +459,7 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
 2. Right-click `deployment.template.json` and select build and push.\
    ![Build and push](/help/images/CreatingModule_builld_and_push.png "Build and push")\
    This process is slow when it runs for the first time.\
-   If the process errors out with `#11 1.679 A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders` then it's likely it is a issue with build machine vs target machien architecture. Check architecture steps above and [github](https://github.com/Azure/iotedge/issues/3353). 
+   If the process errors out with `#11 1.679 A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders` then it's likely it is a issue with build machine vs target machien architecture. Check architecture steps above and [github](https://github.com/Azure/iotedge/issues/3353).\
    The terminal output looks like this:
    ```powershell
    PS C:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1> docker build  --rm -f "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Dockerfile.arm32v7" -t ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm32v7 "c:\dev\raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1" ; if ($?) { docker push ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm32v7 }
@@ -524,52 +524,7 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
    1. ssh to the device, in a different terminal: *ssh pi@ip_here*
    2. `journalctl -u iotedge --no-pager --no-full`\
       ```log
-      [INFO] - [work] - - - [2021-01-03 04:36:36.209076498 UTC] "POST /modules/%24edgeAgent/genid/637443678223906350/encrypt?api-version=2020-07-07…"-" "-" auth_id(-)
-      [INFO] - [mgmt] - - - [2021-01-03 04:36:36.463824660 UTC] "GET /identities/?api-version=2020-07-07 HTTP/1.1" 200 OK 326 "-" "-" auth_id(-)
-      [INFO] - [mgmt] - - - [2021-01-03 04:36:36.605057017 UTC] "DELETE /identities/SimulatedTemperatureSensor?api-version=2020-07-07 HTTP/1.1" 204…"-" "-" auth_id(-)
-      [INFO] - [mgmt] - - - [2021-01-03 04:36:36.818137757 UTC] "PUT /identities/%24edgeHub?api-version=2020-07-07 HTTP/1.1" 200 OK 98 "-" "-" auth_id(-)
-      [INFO] - [mgmt] - - - [2021-01-03 04:36:36.864481924 UTC] "POST /identities/?api-version=2020-07-07 HTTP/1.1" 200 OK 112 "-" "-" auth_id(-)
-      [INFO] - Stopping module SimulatedTemperatureSensor...
-      [INFO] - [work] - - - [2021-01-03 04:36:37.244094053 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - [work] - - - [2021-01-03 04:36:37.290317999 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/encrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - [work] - - - [2021-01-03 04:36:37.331660200 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - [work] - - - [2021-01-03 04:36:37.373273029 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/encrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - Successfully stopped module SimulatedTemperatureSensor
-      [INFO] - [mgmt] - - - [2021-01-03 04:36:37.609487427 UTC] "POST /modules/SimulatedTemperatureSensor/stop?api-version=2020-07-07 HTTP/1.1" 204…"-" "-" auth_id(-)
-      [INFO] - [work] - - - [2021-01-03 04:36:37.674082230 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - Removing module SimulatedTemperatureSensor...
-      [INFO] - Successfully removed module SimulatedTemperatureSensor
-      [INFO] - [mgmt] - - - [2021-01-03 04:36:37.715949261 UTC] "DELETE /modules/SimulatedTemperatureSensor?api-version=2020-07-07 HTTP/1.1" 204 No…"-" "-" auth_id(-)
-      [INFO] - [work] - - - [2021-01-03 04:36:37.747326900 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - Pulling image ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8...
-      [INFO] - [work] - - - [2021-01-03 04:36:37.949064624 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - [work] - - - [2021-01-03 04:36:37.994590390 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/encrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - [work] - - - [2021-01-03 04:36:38.041809644 UTC] "POST /modules/%24edgeHub/genid/637443678223906350/decrypt?api-version=2019-01-30 H…"-" "-" auth_id(-)
-      [INFO] - Checking edge runtime status
-      [INFO] - Edge runtime is running.
-      [INFO] - Successfully pulled image ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm64v8
-      [INFO] - Creating module ImageClassifierModule1...
-      [INFO] - Successfully created module ImageClassifierModule1
-      [INFO] - [mgmt] - - - [2021-01-03 04:37:19.347262866 UTC] "POST /modules?api-version=2020-07-07 HTTP/1.1" 201 Created 1058 "-" "-" auth_id(-)
-      [INFO] - Starting module ImageClassifierModule1...
-      [INFO] - Successfully started module ImageClassifierModule1
-      [INFO] - [mgmt] - - - [2021-01-03 04:37:20.364979482 UTC] "POST /modules/ImageClassifierModule1/start?api-version=2020-07-07 HTTP/1.1" 204 No…"-" "-" auth_id(-)
-      [INFO] - Pulling image mcr.microsoft.com/azureiotedge-hub:1.0...
-      [INFO] - Successfully pulled image mcr.microsoft.com/azureiotedge-hub:1.0
-      [INFO] - [mgmt] - - - [2021-01-03 04:37:23.095349350 UTC] "POST /modules/edgeHub/prepareupdate?api-version=2020-07-07 HTTP/1.1" 204 No Conten…"-" "-" auth_id(-)
-      [INFO] - Stopping module edgeHub...
-      [INFO] - Successfully stopped module edgeHub
-      [INFO] - [mgmt] - - - [2021-01-03 04:37:34.008127214 UTC] "POST /modules/edgeHub/stop?api-version=2020-07-07 HTTP/1.1" 204 No Content - "-" "-" auth_id(-)
-      [INFO] - Updating module edgeHub
-      [INFO] - Removing module edgeHub...
-      [INFO] - Successfully removed module edgeHub
-      [INFO] - Pulling image mcr.microsoft.com/azureiotedge-hub:1.0...
-      [INFO] - Successfully pulled image mcr.microsoft.com/azureiotedge-hub:1.0
-      [INFO] - Creating module edgeHub...
-      [INFO] - Successfully created module edgeHub
-      [INFO] - [mgmt] - - - [2021-01-03 04:37:36.332257504 UTC] "PUT /modules/edgeHub?api-version=2020-07-07 HTTP/1.1" 200 OK 1018 "-" "-" auth_id(-)
-      [INFO] - Starting module edgeHub...
-      [INFO] - Successfully started module edgeHub
+     
       ```
 2. Test the alive direct method
    1. In the IoT extension, right-click on the device and select *Invoke Device Direct Method*\
