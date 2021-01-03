@@ -524,13 +524,33 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
    1. ssh to the device, in a different terminal: *ssh pi@ip_here*
    2. `journalctl -u iotedge --no-pager --no-full`\
       ```log
-     
+      [INFO] - Pulling image ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm32v7...
+      [INFO] - Successfully pulled image ttregistry1.azurecr.io/imageclassifiermodule1:0.0.1-arm32v7
+      [INFO] - Creating module ImageClassifierModule1...
+      [INFO] - Successfully created module ImageClassifierModule1
+      [INFO] - [mgmt] - - - [2021-01-03 05:44:44.911078254 UTC] "PUT /modules/ImageClassifierModule1?api-version=2020-07-07 HTTP/1.1" 200 OK 1058 "-" "-" auth_id(-)
+      [INFO] - Starting module ImageClassifierModule1...
+      [INFO] - Successfully started module ImageClassifierModule1
       ```
 2. Test the alive direct method
-   1. In the IoT extension, right-click on the device and select *Invoke Device Direct Method*\
-      ![Deployment - testing](/images/help/CreatingModule_testing.png.png "Deployment - confirming")
+   1. In the IoT extension, right-click on the module, *NOT* on the device, and select *Invoke Module Direct Method*\
+      ![Deployment - testing](/images/help/CreatingModule_testing.png "Deployment - testing")
    2. Type *alive*
-   3. Fail
+   3. No content; [Enter]
+   4. The output should be something like this: 
+      ```bash
+      [DirectMethod] Invoking Direct Method [alive] to [d1/ImageClassifierModule1] ...
+      [DirectMethod] Response from [d1/ImageClassifierModule1]:
+      {
+      "status": 200,
+      "payload": {
+         "Status": "OK",
+         "NowUtc": "2021-01-03T05:57:00.2343891Z",
+         "NowLocal": "2021-01-03T05:57:00.2343891+00:00"
+      }
+      }
+      ```
+      ![Deployment - testing result](/images/help/CreatingModule_testing_2.png "Deployment - testing result")
 
 # Part H. Create, train and export Lobe model
 
