@@ -8,7 +8,7 @@
 - [Part E. Connect to IoT Hub](#part-e-connect-to-iot-hub)
 - [(Optional) Part F. Deploy a simulated temperature module](#optional-part-f-deploy-a-simulated-temperature-module)
 - [Part G. Build and deploy a custom IoT module](#part-g-build-and-deploy-a-custom-iot-module)
-  - [Create a new module project](#create-a-new-module-project)
+  - [Create a new module - C# project](#create-a-new-module---c-project)
 - [Part H. Create, train and export Lobe model](#part-h-create-train-and-export-lobe-model)
 - [Part I. Run Lobe model in Iot Edge module](#part-i-run-lobe-model-in-iot-edge-module)
 
@@ -371,21 +371,21 @@ This module will run the image classifier. The machine learning module will **no
    1. [Install Docker Desktop on Windows](https://docs.docker.com/docker-for-windows/install/) @457MB
    2. (Not sure if required) Restart Windows. ;(
 2. [Set up VS Code and tools](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#set-up-vs-code-and-tools) - that's VS Code and the IoT Edge extension - done in prevoius steps
-3. [Create a container registry](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-container-registry)
+3. [Create a container registry](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-container-registry)\
    **Pricing details: Basic - price per day $0.167** 
    TODO Switch to Docker Hub (if free/cheaper)
-   1. Create at Basic tier.  
+   1. Create at Basic tier.\
       ![Creating Container Registry](/help/images/CreatingContainerRegistry_1.png "Creating Container Registry 1") 
       ![Creating Container Registry](/help/images/CreatingContainerRegistry_2.png "Creating Container Registry 2") 
-   1. Once created, go to the resource.
-   2. Go to *Access Keys* and enable admin acces
+      1. Once created, go to the resource.
+   2. Go to *Access Keys* and enable admin access.\
       ![Container Registry Access Keys](/help/images/CreatingContainerRegistry_3.png "Container Registry Access Keys") 
       ![Container Registry Access Keys - Admin Access](/help/images/CreatingContainerRegistry_4.png "Container Registry Access Keys - Admin Access") 
    3. Note the url, username and a password
 
-## Create a new module project 
+## Create a new module - C# project 
 
-Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-new-module-project)
+Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#create-a-new-module-project) and [Use Visual Studio Code to develop and debug modules for Azure IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-vs-code-develop-module?view=iotedge-2018-06)
 
 1. Create a new empty folder for the code and open it in VS Code
 2. In VS Code F1 (Open command palette) and find *Azure IoT Edge: New IoT Edge Solution*
@@ -399,7 +399,15 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
    ![.env file](/help/images/CreatingModule_env_file.png ".env file") 
 5. Set the target architecture for the module:
    1. Visit the Pi's spec page, for example: [Raspberry Pi 4 Tech Specs](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/specifications/):
-      *Broadcom BCM2711, Quad core Cortex-A72 (ARM v8) 64-bit SoC @ 1.5GHz*
+      Broadcom BCM2711, Quad core Cortex-A72 (ARM v8) 64-bit SoC @ 1.5GHz
+   1. In Command palette find *Azure IoT Edge: Set Default Target Platform for Edge Solution* and set it to, for RPi 4, to *arm64v8*
+   2. Open *deployment.template.json* and examine *moduleContent->$edgeAgent->properties.desired->modules*
+      There will be to modules there, because *SimulatedTemperatureSensor* is added by default to template solutions.
+      ![Two default modules](/help/images/CreatingModule_2_modules.png "Two default modules") 
+   3. Delete *SimulatedTemperatureSensor* entries from *deployment.debug.template.json* and from *deployment.template.json*. Delete it from modules and routes - 4 elements need to be deleted.
+      ![Deleting SimulatedTemperatureSenson](/help/images/CreatingModule_deleting_SimulatedTemperatureSensor.png "Deleting SimulatedTemperatureSensor")
+   4. Have a look at the C# source code: *raspberry_pi_project_1\module1\ImageClassifierSolution1\modules\ImageClassifierModule1\Program.cs* and follow [Review the sample code](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux?view=iotedge-2018-06#review-the-sample-code)
+   5. 
 
 
 # Part H. Create, train and export Lobe model
