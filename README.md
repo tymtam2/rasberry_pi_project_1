@@ -10,6 +10,8 @@
 - [Part G. Build and deploy a custom IoT module](#part-g-build-and-deploy-a-custom-iot-module)
   - [Create a new module - C# project](#create-a-new-module---c-project)
   - [Build, push, deploy, test](#build-push-deploy-test)
+  - [(Optional) Debug](#optional-debug)
+- ['hello world' should print](#hello-world-should-print)
 - [Part H. Create, train and export Lobe model](#part-h-create-train-and-export-lobe-model)
 - [Part I. Run Lobe model in Iot Edge module](#part-i-run-lobe-model-in-iot-edge-module)
 
@@ -410,9 +412,9 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
       ```
       If it's *armv7l* then the OS is 32-bit
    2. In Command palette find *Azure IoT Edge: Set Default Target Platform for Edge Solution* and set it to, for RPi 4, to *arm32v7*
-6. In Dockerfile.arm32v7 change the first line from 
-   `FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm32v7 AS build-env`
-   to 
+6. In Dockerfile.arm32v7 change the first line from\ 
+   `FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm32v7 AS build-env`\
+   to \
    `FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build-env`\
    More details in [github](https://github.com/Azure/iotedge/issues/3353). 
 7. Open *deployment.template.json* and examine *moduleContent->$edgeAgent->properties.desired->modules*
@@ -519,7 +521,7 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
 1. Navigate to *config/deployment.arm64v8.json* file and select it\
    ![Creating deployemnt - choosing file](/help/images/CreatingModule_creating_deployment_2.png "Creating deployment - choosing file")
 1. Inspect the device in the IoT extension and check the log messages.\
-   ImageClassifierModule1 shoul be running (may need refreshing) and the Output in the terminal should show a sucess.
+   ImageClassifierModule1 shoul be running (may need refreshing) and the Output in the terminal should show a sucess.   
    ```
    [Edge] Start deployment to device [d1]
    [Edge] Deployment succeeded.
@@ -556,6 +558,102 @@ Based on [Create a new module project](https://docs.microsoft.com/en-us/azure/io
       }
       ```
       ![Deployment - testing result](/help/images/CreatingModule_testing_2.png "Deployment - testing result")
+
+##  (Optional) Debug
+
+Following [Debug a module with the IoT Edge runtime](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-vs-code-develop-module?view=iotedge-2018-06#debug-a-module-with-the-iot-edge-runtime) 
+
+This failed, but at the end of the above article there is a link to [Easily build and debug IoT Edge modules on your remote device with Azure IoT Edge for VS Code 1.9.0.](https://devblogs.microsoft.com/iotdev/easily-build-and-debug-iot-edge-modules-on-your-remote-device-with-azure-iot-edge-for-vs-code-1-9-0/) which may work.
+
+1. az acr login -n ttregistry1.azurecr.io
+2. In Dockerfile.arm32v7.debug change the following (11?) line from\ 
+   `FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm32v7 AS build-env`\
+   to \
+   `FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build-env`\
+   More details in [github](https://github.com/Azure/iotedge/issues/3353). 
+3. In the Visual Studio Code command palette:
+   1. Run the command Azure *IoT Edge: Build and Push IoT Edge solution*.
+   2. Select the *deployment.debug.template.json* file for your solution.
+   3. Wait for (5+) minutes.
+4. In the IoT extension right-click on the device and select *Create Deployment for Single Device*.
+5. Choose *deployment.debug.arm32v7.json* from the config directory.\
+    ![Deploying debug module](/help/images/Debug_selecting_config.png "Deploying debug module")
+6. Follow [Attaching to remote processes](https://github.com/OmniSharp/omnisharp-vscode/wiki/Attaching-to-remote-processes) which actually points to [Offroad Debugging of .NET Core on Linux OSX from Visual Studio](https://github.com/Microsoft/MIEngine/wiki/Offroad-Debugging-of-.NET-Core-on-Linux---OSX-from-Visual-Studio#ssh)
+   1. ssh onto the Pi
+   1. `sudo apt-get install openssh-server`
+   1. Back on dev machined ownload puttygen.exe from [PuTTY](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).
+   2. > Run the tool and click 'Generate' and follow the instructions. Note: leave 'Key passphrase' empty, otherwise plink.exe will fail to open the key.
+   3. > Save the generated private key to a file.
+   4. Keep Putty open
+   5. Download plink.exe from Putty
+   6. On the pi, mkdir ~/.ssh/
+   7. vi ~/.ssh/authorized_keys
+   8. Paste the content of the tope box in Putty
+   9. Back on the dev machine: Test your connection from the command line.
+      ```
+      C:\Users\letss>c:\dev\plink.exe -i c:\dev\private_key_for_ssh_debugging.ppk pi@192.168.1.12
+      # accept key 
+      # Ctrl+C
+      C:\Users\letss>c:\dev\plink.exe -i c:\dev\private_key_for_ssh_debugging.ppk pi@192.168.1.12 -batch -T echo "hello world"
+      ```
+   10. Back on the Pi, install VSDBG
+      ```
+      pi@raspberrypi:~ $ curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l ~/vsdbg
+      Info: Previous installation at '/home/pi/vsdbg' not found
+      Info: Using vsdbg version '16.9.11208.4'
+      Info: Creating install directory
+      Using arguments
+         Version                    : 'latest'
+         Location                   : '/home/pi/vsdbg'
+         SkipDownloads              : 'false'
+         LaunchVsDbgAfter           : 'false'
+         RemoveExistingOnUpgrade    : 'false'
+      Info: Using Runtime ID 'linux-arm'
+      Downloading https://vsdebugger.azureedge.net/vsdbg-16-9-11208-4/vsdbg-linux-arm.tar.gz
+      Info: Successfully installed vsdbg at '/home/pi/vsdbg'
+      ```
+      Without this debugging will result in:\
+      ```
+      Starting: "c:\dev\plink.exe" -i c:\dev\private_key_for_ssh_debugging.ppk pi@192.168.1.12 -batch -T "~/vsdbg/vsdbg --interpreter=vscode"
+      Error from pipe program 'plink.exe': bash: /home/pi/vsdbg/vsdbg: No such file or directory
+      ```
+   11. In VS Code press F5. VS Code should prompt to open launch.json. Open it. Alternatively open *.vscode/launch.json* from the explorer.
+   12. Add a configuration: 
+      ```json
+      {
+         "name": ".NET Core SSH Attach",
+         "type": "coreclr",
+         "request": "attach",
+         "processId": "${command:pickRemoteProcess}",
+         "pipeTransport": {
+            "pipeProgram": "c:\\dev\\plink.exe",
+            "pipeArgs": [ "-i", "c:\\dev\\private_key_for_ssh_debugging.ppk", "pi@192.168.1.12", "-batch", "-T" ],
+            "debuggerPath": "~/vsdbg/vsdbg",
+            "pipeCwd": "${workspaceRoot}",
+            "quoteArgs": true
+         },
+         "sourceFileMap": {
+            "/home/ExampleAccount/ExampleProject": "${workspaceRoot}"
+         }
+      }
+      ```
+   13. In VS Code's Debug view select the new configuration.
+        ![Choosing debug configuration](/help/images/Debug_selecting_configuation.png "Choosing debug configuration")
+   14. Select the image classifier dotnet process
+   15. FAIL
+      ```
+      Starting: "c:\dev\plink.exe" -i c:\dev\private_key_for_ssh_debugging.ppk pi@192.168.1.12 -batch -T "~/vsdbg/vsdbg --interpreter=vscode"
+      -------------------------------------------------------------------
+      You may only use the Microsoft .NET Core Debugger (vsdbg) with
+      Visual Studio Code, Visual Studio or Visual Studio for Mac software
+      to help you develop and test your applications.
+      -------------------------------------------------------------------
+      Unable to start debugging. Failed to attach to process: Unknown Error: 0x80131c3c
+      ```
+
+
+
+# 'hello world' should print
 
 # Part H. Create, train and export Lobe model
 

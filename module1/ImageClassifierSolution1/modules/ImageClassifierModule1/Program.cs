@@ -10,11 +10,10 @@ namespace ImageClassifierModule1
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+    using Microsoft.Azure.Devices.Shared;
 
     class Program
     {
-        static int counter;
-
         static void Main(string[] args)
         {
             Init().Wait();
@@ -51,9 +50,24 @@ namespace ImageClassifierModule1
             Console.WriteLine("IoT Hub module client initialized.");
 
             // Register callback to be called when a message is received by the module
-            await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
+            // await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
 
             await ioTHubModuleClient.SetMethodHandlerAsync("alive", AliveHandler, ioTHubModuleClient);
+
+            await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback, ioTHubModuleClient);
+        }
+
+        public static async Task DesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext) 
+        {
+            var client = (ModuleClient) userContext;
+
+            var x = desiredProperties["x"];
+
+            var reportedProperties = new TwinCollection();
+
+            reportedProperties["x"] = x;
+
+            await client.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
         }
 
         private static Task<MethodResponse> AliveHandler(MethodRequest methodRequest, object userContext)
@@ -67,39 +81,39 @@ namespace ImageClassifierModule1
             return Task.FromResult(response);
         }
 
-        /// <summary>
-        /// This method is called whenever the module is sent a message from the EdgeHub. 
-        /// It just pipe the messages without any change.
-        /// It prints all the incoming messages.
-        /// </summary>
-        static async Task<MessageResponse> PipeMessage(Message message, object userContext)
-        {
-            int counterValue = Interlocked.Increment(ref counter);
+    //     /// <summary>
+    //     /// This method is called whenever the module is sent a message from the EdgeHub. 
+    //     /// It just pipe the messages without any change.
+    //     /// It prints all the incoming messages.
+    //     /// </summary>
+    //     static async Task<MessageResponse> PipeMessage(Message message, object userContext)
+    //     {
+    //         int counterValue = Interlocked.Increment(ref counter);
 
-            var moduleClient = userContext as ModuleClient;
-            if (moduleClient == null)
-            {
-                throw new InvalidOperationException("UserContext doesn't contain " + "expected values");
-            }
+    //         var moduleClient = userContext as ModuleClient;
+    //         if (moduleClient == null)
+    //         {
+    //             throw new InvalidOperationException("UserContext doesn't contain " + "expected values");
+    //         }
 
-            byte[] messageBytes = message.GetBytes();
-            string messageString = Encoding.UTF8.GetString(messageBytes);
-            Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
+    //         byte[] messageBytes = message.GetBytes();
+    //         string messageString = Encoding.UTF8.GetString(messageBytes);
+    //         Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
 
-            if (!string.IsNullOrEmpty(messageString))
-            {
-                using (var pipeMessage = new Message(messageBytes))
-                {
-                    foreach (var prop in message.Properties)
-                    {
-                        pipeMessage.Properties.Add(prop.Key, prop.Value);
-                    }
-                    await moduleClient.SendEventAsync("output1", pipeMessage);
+    //         if (!string.IsNullOrEmpty(messageString))
+    //         {
+    //             using (var pipeMessage = new Message(messageBytes))
+    //             {
+    //                 foreach (var prop in message.Properties)
+    //                 {
+    //                     pipeMessage.Properties.Add(prop.Key, prop.Value);
+    //                 }
+    //                 await moduleClient.SendEventAsync("output1", pipeMessage);
                 
-                    Console.WriteLine("Received message sent");
-                }
-            }
-            return MessageResponse.Completed;
-        }
+    //                 Console.WriteLine("Received message sent");
+    //             }
+    //         }
+    //         return MessageResponse.Completed;
+    //     }
     }
 }
